@@ -1,14 +1,20 @@
-name: v5 tests
+name: tests
 
 on:
   push:
     branches: [main, "claude/**"]
     paths:
-      - "v5/**"
+      - "src/**"
+      - "tests/**"
+      - "config/**"
+      - "*.py"
       - ".github/workflows/v5-tests.yml"
   pull_request:
     paths:
-      - "v5/**"
+      - "src/**"
+      - "tests/**"
+      - "config/**"
+      - "*.py"
       - ".github/workflows/v5-tests.yml"
 
 jobs:
@@ -23,8 +29,8 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-      - name: Install minimal v5 dependencies
-        # Avoid heavy domain libs in CI (nba_api, awpy, hearthstone) — they pull
+      - name: Install dependencies
+        # Avoid heavy domain libs in CI (nba_api, awpy) — they pull
         # in compiled toolchains and are not needed for the harness+pilot tests.
         # Domain pipelines have try/except ImportError guards for missing libs.
         run: |
@@ -33,14 +39,14 @@ jobs:
 
       - name: Run pytest with coverage
         run: |
-          python -m pytest v5/tests/ -v \
-            --cov=v5/src \
+          python -m pytest tests/ -v \
+            --cov=src \
             --cov-report=term-missing \
             --cov-report=xml \
             --cov-report=html
 
       - name: Run pilot smoke test (mock data)
-        run: python -m v5.run_pilot --output v5/RESULTS/pilot_report_ci.json
+        run: python run_pilot.py --output RESULTS/pilot_report_ci.json
 
       - name: Upload coverage HTML report
         uses: actions/upload-artifact@v4
@@ -63,5 +69,5 @@ jobs:
         if: always()
         with:
           name: pilot-report
-          path: v5/RESULTS/pilot_report_ci.json
+          path: RESULTS/pilot_report_ci.json
           if-no-files-found: ignore
