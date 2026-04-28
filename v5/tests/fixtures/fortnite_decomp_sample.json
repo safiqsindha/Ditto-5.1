@@ -1,0 +1,47 @@
+{
+  "match_id": "0fbcece6e1774c9abdd1ebd88fbad4ec",
+  "events": [
+    {
+      "id": "storm_001",
+      "group": "PhaseChange",
+      "metadata": {"phase": 1, "circleCenterX": 0, "circleCenterY": 0, "circleRadius": 5000},
+      "time1_ms": 90000,
+      "time2_ms": 90000
+    },
+    {
+      "id": "storm_002",
+      "group": "PhaseChange",
+      "metadata": {"phase": 2, "circleCenterX": 100, "circleCenterY": -50, "circleRadius": 3000},
+      "time1_ms": 240000,
+      "time2_ms": 240000
+    },
+    {
+      "id": "storm_003",
+      "group": "PhaseChange",
+      "metadata": {"phase": 3, "circleCenterX": 200, "circleCenterY": 100, "circleRadius": 1500},
+      "time1_ms": 420000,
+      "time2_ms": 420000
+    },
+    {
+      "id": "elim_001",
+      "group": "playerElim",
+      "metadata": {"eliminator": "player_001", "eliminated": "player_042", "weapon": "AssaultRifle", "knocked": false},
+      "time1_ms": 120500,
+      "time2_ms": 120500
+    },
+    {
+      "id": "elim_002",
+      "group": "playerElim",
+      "metadata": {"eliminator": "player_007", "eliminated": "player_018", "weapon": "Shotgun", "knocked": true},
+      "time1_ms": 305200,
+      "time2_ms": 305200
+    },
+    {
+      "id": "stats_001",
+      "group": "AthenaMatchStats",
+      "metadata": {"playerId": "player_001", "kills": 3, "placement": 5},
+      "time1_ms": 900000,
+      "time2_ms": 900000
+    }
+  ]
+}

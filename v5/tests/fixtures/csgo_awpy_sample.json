@@ -1,0 +1,78 @@
+{
+  "matchID": "test_match_001",
+  "mapName": "de_mirage",
+  "rounds": [
+    {
+      "roundNum": 1,
+      "startTick": 0,
+      "endTick": 12800,
+      "ctEqVal": 4250,
+      "tEqVal": 4350,
+      "ctBuyType": "Pistol",
+      "tBuyType": "Pistol",
+      "kills": [
+        {
+          "tick": 1280,
+          "weapon": "glock",
+          "weaponClass": "pistol",
+          "attackerSteamID": "76561198001",
+          "victimSteamID": "76561198002",
+          "isHeadshot": true,
+          "attackerSide": "T",
+          "attackerX": 100.5,
+          "attackerY": 200.3
+        },
+        {
+          "tick": 6400,
+          "weapon": "usp_silencer",
+          "weaponClass": "pistol",
+          "attackerSteamID": "76561198003",
+          "victimSteamID": "76561198004",
+          "isHeadshot": false,
+          "attackerSide": "CT",
+          "attackerX": -300.0,
+          "attackerY": 50.0
+        }
+      ],
+      "grenades": [
+        {
+          "throwTick": 2000,
+          "grenadeType": "flashbang",
+          "throwerSteamID": "76561198001",
+          "grenadeX": 150.0,
+          "grenadeY": 220.0
+        }
+      ],
+      "bombEvents": [
+        {
+          "tick": 9600,
+          "bombAction": "plant_begin",
+          "playerSteamID": "76561198001",
+          "bombSite": "A"
+        }
+      ]
+    },
+    {
+      "roundNum": 2,
+      "startTick": 13000,
+      "endTick": 25800,
+      "ctEqVal": 5000,
+      "tEqVal": 800,
+      "ctBuyType": "Full Buy",
+      "tBuyType": "Eco",
+      "kills": [
+        {
+          "tick": 14000,
+          "weapon": "ak47",
+          "weaponClass": "rifle",
+          "attackerSteamID": "76561198003",
+          "victimSteamID": "76561198001",
+          "isHeadshot": true,
+          "attackerSide": "CT"
+        }
+      ],
+      "grenades": [],
+      "bombEvents": []
+    }
+  ]
+}

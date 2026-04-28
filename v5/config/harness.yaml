@@ -1,0 +1,51 @@
+# v5 Statistical Harness Configuration
+# Adapted from v4 McNemar pipeline for five-cell parallel operation.
+# Parameters marked [REQUIRES SIGN-OFF] must not be locked until SPEC is pre-registered.
+
+harness:
+  version: "1.1"
+  cells: ["fortnite", "nba", "csgo", "rocket_league", "poker"]
+
+  mcnemar:
+    alpha: 0.05
+    continuity_correction: true
+    two_sided: true
+    bonferroni_divisor: 5  # LOCKED via SPEC Q2 — five per-cell tests at α_corrected = 0.01
+    min_discordant_pairs: 10
+
+  scoring:
+    correct_label: 1
+    incorrect_label: 0
+    abstain_label: -1  # chains where model produces no classifiable output
+
+  variance:
+    bootstrap_iterations: 10000
+    bootstrap_seed: 42
+    confidence_level: 0.95
+
+  gate2:
+    retention_floor: 0.50  # Gate 2: must retain >= 50% of chains after ACTIONABLE filter
+
+  reporting:
+    cell_level: true
+    aggregate: true
+    effect_size: true  # Cohen's h for proportions
+    power_post_hoc: true
+
+  chain_length:  # Q4 LOCKED + Phase B LOCKED 2026-04-27 (both authors)
+    mode: "fixed_per_cell"
+    per_cell:
+      fortnite: 8         # F-3 locked: storm-rotation window (~600 tokens)
+      nba: 5              # N-3 locked: one full possession + lead-in
+      csgo: 10            # C-3 locked: one full round at round-level granularity
+      rocket_league: 12   # R-3 locked: one play (6-8 hits + 4-6 boost events)
+      poker: 8            # P-3 locked: player-hand window (matches FortniteT N)
+    overlap: false        # non-overlapping (sliding window with step = chain_length)
+    sampling: "sequential" # within-game sequential; uniform subsample to hit n_chains target
+
+actionables:
+  version: "1.1"
+  amendments:
+    - "ResourceBudget included in actionable types"
+    - "phase_ prefix stripped before type comparison"
+  gate2_floor: 0.50

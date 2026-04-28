@@ -1,0 +1,27 @@
+{
+  "parameters": {"GameID": "0022300100"},
+  "resultSets": [
+    {
+      "name": "PlayByPlay",
+      "headers": [
+        "GAME_ID", "EVENTNUM", "EVENTMSGTYPE", "EVENTMSGACTIONTYPE",
+        "PERIOD", "WCTIMESTRING", "PCTIMESTRING",
+        "HOMEDESCRIPTION", "NEUTRALDESCRIPTION", "VISITORDESCRIPTION",
+        "SCORE", "SCOREMARGIN",
+        "PERSON1TYPE", "PLAYER1_ID", "PLAYER1_NAME", "PLAYER1_TEAM_ID"
+      ],
+      "rowSet": [
+        ["0022300100", 2, 12, 0, 1, "7:30 PM", "12:00", "Start Period 1", "", "", "0 - 0", "0", 0, "0", "", "0"],
+        ["0022300100", 4, 10, 0, 1, "7:30 PM", "12:00", "Tip-off", "", "", "", "", 4, "1234", "Player A", "1610612737"],
+        ["0022300100", 7, 1, 1, 1, "7:30 PM", "11:32", "", "", "Player B 2-pt jump shot", "0 - 2", "-2", 4, "5678", "Player B", "1610612738"],
+        ["0022300100", 9, 4, 0, 1, "7:30 PM", "11:25", "Player A defensive rebound", "", "", "0 - 2", "-2", 4, "1234", "Player A", "1610612737"],
+        ["0022300100", 12, 2, 1, 1, "7:30 PM", "11:00", "Player A missed jump shot", "", "", "0 - 2", "-2", 4, "1234", "Player A", "1610612737"],
+        ["0022300100", 14, 4, 0, 1, "7:30 PM", "10:58", "", "", "Player B defensive rebound", "0 - 2", "-2", 4, "5678", "Player B", "1610612738"],
+        ["0022300100", 16, 1, 0, 1, "7:30 PM", "10:30", "", "", "Player B 2-pt layup", "0 - 4", "-4", 4, "5678", "Player B", "1610612738"],
+        ["0022300100", 19, 5, 0, 1, "7:30 PM", "10:10", "Player A bad pass turnover", "", "", "0 - 4", "-4", 4, "1234", "Player A", "1610612737"],
+        ["0022300100", 22, 6, 0, 1, "7:30 PM", "10:00", "", "", "Player B personal foul", "0 - 4", "-4", 4, "5678", "Player B", "1610612738"],
+        ["0022300100", 25, 13, 0, 1, "7:30 PM", "0:00", "End Period 1", "", "", "0 - 4", "-4", 0, "0", "", "0"]
+      ]
+    }
+  ]
+}

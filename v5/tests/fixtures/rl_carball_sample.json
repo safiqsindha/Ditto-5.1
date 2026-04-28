@@ -1,0 +1,60 @@
+{
+  "id": "test_replay_001",
+  "_hits": [
+    {
+      "frame_number": 30,
+      "player_id": {"id": "player_blue_0"},
+      "hit_type": "shot",
+      "team": 0,
+      "ball_data": {"pos_x": 0, "pos_y": 4000, "pos_z": 100},
+      "distance_to_goal": 200
+    },
+    {
+      "frame_number": 60,
+      "player_id": {"id": "player_orange_0"},
+      "hit_type": "save",
+      "team": 1,
+      "ball_data": {"pos_x": 0, "pos_y": 5000, "pos_z": 200},
+      "distance_to_goal": 100
+    },
+    {
+      "frame_number": 90,
+      "player_id": {"id": "player_blue_1"},
+      "hit_type": "goal",
+      "team": 0,
+      "ball_data": {"pos_x": 0, "pos_y": 5300, "pos_z": 80},
+      "distance_to_goal": 0
+    }
+  ],
+  "_goals": [
+    {"frame_number": 90, "PlayerName": {"value": "player_blue_1"}}
+  ],
+  "_players": [
+    {
+      "id": {"id": "player_blue_0"},
+      "boost_events": [
+        {"frame": 15, "type": "pickup_big", "amount": 100},
+        {"frame": 45, "type": "use", "amount": 30}
+      ],
+      "boost_history": [
+        [10, 100],
+        [20, 80],
+        [40, 30],
+        [50, 20],
+        [70, 10]
+      ]
+    },
+    {
+      "id": {"id": "player_orange_0"},
+      "boost_events": [
+        {"frame": 25, "type": "pickup_small", "amount": 12}
+      ],
+      "boost_history": [
+        [10, 50],
+        [25, 62],
+        [55, 35],
+        [80, 15]
+      ]
+    }
+  ]
+}

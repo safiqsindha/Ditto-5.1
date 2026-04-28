@@ -1,0 +1,98 @@
+# v5 Cell Configuration
+# One section per domain cell. All sample targets are upstream data targets
+# (sized for ~1200 chains per cell after filtering loss).
+
+cells:
+  fortnite:
+    cell_id: "fortnite"
+    display_name: "Fortnite (FNCS/Cash Cup)"
+    data_source: "epic_cdn_replay"
+    tournament_tiers: ["FNCS", "Cash_Cup"]
+    time_range:
+      start: "2024-01-01"
+      end: "2024-12-31"
+    sample_target_matches: 200
+    stratification:
+      - tier: "FNCS"
+        fraction: 0.70
+      - tier: "Cash_Cup"
+        fraction: 0.30
+    env_vars:
+      - EPIC_ACCOUNT_ID
+      - EPIC_ACCESS_TOKEN
+    mock_fallback: true
+    parser: "FortniteReplayDecompressor"
+
+  nba:
+    cell_id: "nba"
+    display_name: "NBA (2023-24)"
+    data_source: "nba_stats_api"
+    seasons: ["2023-24"]
+    sample_target_games: 300
+    stratification:
+      - phase: "regular_season"
+        fraction: 0.80
+      - phase: "playoffs"
+        fraction: 0.20
+    env_vars: []
+    mock_fallback: true
+    tracking_data_available: false  # Second Spectrum not publicly accessible
+
+  csgo:
+    cell_id: "csgo"
+    display_name: "CS:GO / CS2 (2024 S-tier)"
+    data_source: "hltv_demo_archive"
+    tournament_tiers: ["S-tier"]
+    time_range:
+      start: "2024-01-01"
+      end: "2024-12-31"
+    sample_target_maps: 150
+    demo_format: "cs2"  # CS2 since August 2023; awpy handles both
+    stratification:
+      - event: "IEM_Katowice_2024"
+        fraction: 0.33
+      - event: "BLAST_Premier_2024"
+        fraction: 0.34
+      - event: "ESL_One_2024"
+        fraction: 0.33
+    env_vars: []
+    mock_fallback: true
+    parser: "awpy"
+
+  rocket_league:
+    cell_id: "rocket_league"
+    display_name: "Rocket League (RLCS 2024)"
+    data_source: "ballchasing_api"
+    playlist_filter: "rlcs"
+    time_range:
+      start: "2024-01-01"
+      end: "2024-12-31"
+    sample_target_replays: 250
+    stratification:
+      - tier: "RLCS_World_Championship"
+        fraction: 0.30
+      - tier: "RLCS_Major"
+        fraction: 0.40
+      - tier: "RLCS_Regional"
+        fraction: 0.30
+    env_vars:
+      - BALLCHASING_TOKEN
+    mock_fallback: true
+    parser: "rrrocket"
+
+  poker:
+    cell_id: "poker"
+    display_name: "Poker (NLHE — Pluribus + WSOP 2023)"
+    data_source: "phh_dataset_v3"
+    time_range:
+      start: "2019-01-01"
+      end: "2023-12-31"
+    sample_target_games: 300
+    stratification:
+      - subset: "pluribus"
+        fraction: 0.60
+      - subset: "wsop-2023-50k"
+        fraction: 0.40
+    env_vars: []
+    mock_fallback: true
+    parser: "pokerkit"
