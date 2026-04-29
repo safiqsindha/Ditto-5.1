@@ -361,16 +361,16 @@ def parse_model_response(raw: str, allowed_predictions: list[str] | None = None)
     first_line = s.splitlines()[0].strip().rstrip(".!?,").lower()
 
     if allowed_predictions:
-        # Try exact match first
+        # Exact match only — substring matching invites answer-inverting bugs
+        # (e.g. "No, the sequence is not consistent" vs "There's no doubt — yes,
+        # this is consistent" both contain "no" before "yes"). The Haiku prompt
+        # already says "Reply with exactly one word: YES or NO" so exact match
+        # is the contract we've declared. Non-conforming responses become
+        # abstains (score=-1) and are excluded from McNemar.
         for pred in allowed_predictions:
             if first_line == pred.lower():
                 return pred.lower()
-        # Fall through to substring match
-        for pred in allowed_predictions:
-            if pred.lower() in first_line:
-                return pred.lower()
-        # No match → return empty (will score as abstain)
-        logger.debug(f"Response '{first_line[:60]}' did not match any allowed prediction")
+        logger.debug(f"Response '{first_line[:60]}' did not exact-match any allowed prediction; treating as abstain")
         return ""
 
     return first_line

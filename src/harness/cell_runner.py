@@ -228,11 +228,24 @@ class CellRunner:
         mde_val = None
 
         if baseline_responses and intervention_responses and ground_truths:
-            n = min(len(chains_passed), len(baseline_responses),
-                    len(intervention_responses), len(ground_truths))
-            chains_scored = chains_passed[:n]
-            b_scores = score_batch(chains_scored, ground_truths[:n], baseline_responses[:n])
-            i_scores = score_batch(chains_scored, ground_truths[:n], intervention_responses[:n])
+            # Pairing contract: baseline_responses[i], intervention_responses[i],
+            # and ground_truths[i] correspond to chains_passed[i]. The current
+            # ModelEvaluator is sequential so this holds today, but if batching
+            # is introduced, response lists could be reordered. Assert the
+            # lengths match exactly — silently truncating with min() would mask
+            # any mismatch caused by batching/parallelism.
+            n = len(chains_passed)
+            if not (len(baseline_responses) == len(intervention_responses)
+                    == len(ground_truths) == n):
+                raise ValueError(
+                    f"[{cell}] response/chain length mismatch: "
+                    f"chains={n} baseline={len(baseline_responses)} "
+                    f"intervention={len(intervention_responses)} "
+                    f"gt={len(ground_truths)} — positional pairing broken"
+                )
+            chains_scored = chains_passed
+            b_scores = score_batch(chains_scored, ground_truths, baseline_responses)
+            i_scores = score_batch(chains_scored, ground_truths, intervention_responses)
 
             b_vec, i_vec = extract_binary_vectors(b_scores, i_scores)
             var_baseline = variance_summary([s.correct or False for s in b_scores], cell)

@@ -12,7 +12,11 @@ actionable meets or exceeds the retention floor (default 0.50).
 
 from __future__ import annotations
 
+import logging
+
 from ..common.schema import ChainCandidate, GameEvent
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Core ACTIONABLE_TYPES whitelist (v1.1)
@@ -108,6 +112,15 @@ CELL_ACTIONABLE_OVERRIDES: dict[str, frozenset[str]] = {
 def is_actionable(event: GameEvent, cell: str | None = None) -> bool:
     """Return True if this event qualifies as actionable under v1.1 rules."""
     etype = event.event_type  # phase_ already stripped by GameEvent.__post_init__
+    # Defensive: GameEvent.__post_init__ strips phase_ prefix, but anything
+    # that bypasses __post_init__ (e.g. a future deserialization path that
+    # forgets the contract) would leak un-stripped values. Strip and warn.
+    if etype.startswith("phase_"):
+        logger.warning(
+            f"Un-stripped phase_ prefix on event {event.game_id}/{event.sequence_idx} "
+            f"(actor={event.actor}); GameEvent.__post_init__ should have handled this."
+        )
+        etype = etype[len("phase_"):]
     if etype in ACTIONABLE_TYPES:
         return True
     if cell and cell in CELL_ACTIONABLE_OVERRIDES:

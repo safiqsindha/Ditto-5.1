@@ -97,15 +97,24 @@ def run_mcnemar(
     if b + c < min_discordant_pairs:
         notes = f"WARNING: only {b+c} discordant pairs (threshold={min_discordant_pairs}); test underpowered"
 
-    # McNemar statistic (with optional continuity correction)
-    if continuity_correction:
-        numerator = (abs(b - c) - 1) ** 2
+    # McNemar statistic (with optional continuity correction).
+    # When b + c == 0 (all chains concordant), the test is undefined — return
+    # chi²=0 and p=1 instead of masking with a fake denominator that yields
+    # chi²=1.0 (which would otherwise be a misleading non-zero statistic in
+    # the result object).
+    if b + c == 0:
+        chi2_stat = 0.0
+        p_value = 1.0
+        if notes:
+            notes += "; "
+        notes += "no discordant pairs; McNemar undefined (chi²=0, p=1)"
     else:
-        numerator = (b - c) ** 2
-    denominator = b + c if (b + c) > 0 else 1
-
-    chi2_stat = numerator / denominator
-    p_value = 1.0 - stats.chi2.cdf(chi2_stat, df=1) if (b + c) > 0 else 1.0
+        if continuity_correction:
+            numerator = (abs(b - c) - 1) ** 2
+        else:
+            numerator = (b - c) ** 2
+        chi2_stat = numerator / (b + c)
+        p_value = 1.0 - stats.chi2.cdf(chi2_stat, df=1)
 
     # Bonferroni correction
     alpha_corrected = alpha / bonferroni_divisor

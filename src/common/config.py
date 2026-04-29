@@ -114,12 +114,15 @@ def load_harness_config() -> HarnessConfig:
 
 
 def _default_cell_configs() -> dict[str, CellConfig]:
+    # Per A2 (D-35): pubg is the active battle-royale cell; fortnite kept
+    # as a legacy fixture. Per A3 (D-37): poker sample target is 3,500.
     defaults = {
-        "fortnite": (200, ["EPIC_ACCOUNT_ID", "EPIC_ACCESS_TOKEN"]),
+        "pubg": (25, ["PUBG_API_KEY"]),
         "nba": (300, []),
         "csgo": (150, ["FACEIT_API_KEY"]),
         "rocket_league": (250, ["BALLCHASING_TOKEN"]),
-        "poker": (300, []),
+        "poker": (3500, []),
+        "fortnite": (200, ["EPIC_ACCOUNT_ID", "EPIC_ACCESS_TOKEN"]),  # legacy
     }
     return {
         cell_id: CellConfig(

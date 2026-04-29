@@ -139,9 +139,20 @@ class TestResponseParser:
         assert parse_model_response("yes", allowed_predictions=["yes", "no"]) == "yes"
         assert parse_model_response("no", allowed_predictions=["yes", "no"]) == "no"
 
-    def test_allowed_predictions_substring_match(self):
+    def test_allowed_predictions_substring_no_longer_matches(self):
+        # Substring matching was removed in the Phase-D-prep code review (C1)
+        # because it could invert answers — e.g. "There's no doubt — yes, this
+        # is consistent" contains both "no" and "yes" with "no" appearing
+        # first in scan order. Non-conforming responses now abstain (return "")
+        # and are excluded from McNemar pairs.
         assert parse_model_response("the answer is yes",
-                                     allowed_predictions=["yes", "no"]) == "yes"
+                                     allowed_predictions=["yes", "no"]) == ""
+
+    def test_allowed_predictions_inverted_substring_returns_empty(self):
+        # Specifically the inversion failure mode: "no" appears before "yes"
+        # in the response text, but the actual answer is yes.
+        assert parse_model_response("there's no doubt — yes",
+                                     allowed_predictions=["yes", "no"]) == ""
 
     def test_allowed_predictions_no_match_returns_empty(self):
         assert parse_model_response("maybe",

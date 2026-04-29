@@ -84,12 +84,22 @@ class TestCellRunnerWithMockResponses:
         runner = CellRunner(config=_harness_cfg(min_discordant_pairs=1))
         runner.register_cell("nba", MockT(cell="nba", window_size=5, step_size=3))
         streams = {"nba": [_stream("nba", n_events=30, game_id=f"g{i}") for i in range(5)]}
-        # Pre-flight: see how many post-gate2 chains we'd get
-        # Just provide many responses; runner truncates to actual chain count
-        n_max = 200
-        baseline = ["yes"] * (n_max // 2) + ["no"] * (n_max // 2)
-        intervention = ["yes"] * int(n_max * 0.7) + ["no"] * (n_max - int(n_max * 0.7))
-        gt = ["yes"] * n_max
+
+        # Pair-by-position requires exact length match (H1 fix). Pre-compute
+        # the post-Gate-2 chain count by running once with no responses, then
+        # supply exactly that many responses on the real run.
+        n_chains_post_gate2 = 0
+        try:
+            preflight = runner.run(streams)
+            nba_result = next(r for r in preflight.cells if r.cell == "nba")
+            n_chains_post_gate2 = nba_result.n_chains_post_gate2
+        except Exception:
+            n_chains_post_gate2 = 25  # fallback; harmless if the assertion fires
+
+        n = n_chains_post_gate2 or 25
+        baseline = (["yes"] * (n // 2)) + (["no"] * (n - n // 2))
+        intervention = (["yes"] * int(n * 0.7)) + (["no"] * (n - int(n * 0.7)))
+        gt = ["yes"] * n
         return runner.run(
             streams,
             baseline_responses={"nba": baseline},

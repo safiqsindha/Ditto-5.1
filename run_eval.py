@@ -161,7 +161,20 @@ def run_eval(
             f"[{cell}] Evaluating {len(pairs_real)} real pairs "
             f"({'dry-run' if dry_run else HAIKU_MODEL})..."
         )
-        _, b_real, i_real = evaluator.evaluate_pairs(pairs_real)
+        results_real, b_real, i_real = evaluator.evaluate_pairs(pairs_real)
+
+        # Defensive: positional pairing requires chain_id order to be preserved
+        # by the evaluator. Verify before scoring — if a future batching
+        # backend reorders responses, this assertion fires loudly instead of
+        # silently corrupting McNemar pairs.
+        for chain, result in zip(chains_passed, results_real, strict=True):
+            if chain.chain_id != result.chain_id:
+                raise RuntimeError(
+                    f"[{cell}] chain/result chain_id mismatch: "
+                    f"chain={chain.chain_id} result={result.chain_id} — "
+                    f"evaluator reordered responses"
+                )
+
         baseline_responses[cell] = b_real
         intervention_responses[cell] = i_real
         ground_truths[cell] = ["yes"] * len(chains_passed)
@@ -177,7 +190,15 @@ def run_eval(
                     f"[{cell}] CF-3=A: evaluating {len(pairs_shuf)} shuffled "
                     f"control pairs..."
                 )
-                _, b_shuf, i_shuf = evaluator.evaluate_pairs(pairs_shuf)
+                results_shuf, b_shuf, i_shuf = evaluator.evaluate_pairs(pairs_shuf)
+                # Same chain_id-correspondence check as primary — protects
+                # the shuffle McNemar from any future evaluator reordering.
+                for chain, result in zip(shuffled, results_shuf, strict=True):
+                    if chain.chain_id != result.chain_id:
+                        raise RuntimeError(
+                            f"[{cell}] shuffle chain/result mismatch: "
+                            f"chain={chain.chain_id} result={result.chain_id}"
+                        )
                 gt_shuf = ["no"] * len(shuffled)
 
                 b_scores = score_batch(shuffled, gt_shuf, b_shuf)

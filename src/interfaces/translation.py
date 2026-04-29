@@ -15,10 +15,13 @@ To register T with CellRunner:
 
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 
 from ..common.schema import ChainCandidate, EventStream, GameEvent
 from .translation_base import TranslationFunction  # re-exported for callers
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -72,6 +75,12 @@ class FortniteT(TranslationFunction):
                 end = len(events)
                 start = max(0, end - _FORTNITE_N)
             if start in seen_starts:
+                # Two triggers clamped to the same window start (typically
+                # near the tail of the stream). Keep the first; debug-log so
+                # high collision rates can be diagnosed in run summaries.
+                logger.debug(
+                    f"[{self.cell}] window dedup: trigger at i={i} → start={start} already used; skipping"
+                )
                 continue
             seen_starts.add(start)
 
@@ -139,6 +148,12 @@ class FortniteBuildCostT(TranslationFunction):
                 end = len(events)
                 start = max(0, end - _FORTNITE_N)
             if start in seen_starts:
+                # Two triggers clamped to the same window start (typically
+                # near the tail of the stream). Keep the first; debug-log so
+                # high collision rates can be diagnosed in run summaries.
+                logger.debug(
+                    f"[{self.cell}] window dedup: trigger at i={i} → start={start} already used; skipping"
+                )
                 continue
             seen_starts.add(start)
 
@@ -217,6 +232,12 @@ class PUBGT(TranslationFunction):
                 end = len(events)
                 start = max(0, end - _PUBG_N)
             if start in seen_starts:
+                # Two triggers clamped to the same window start (typically
+                # near the tail of the stream). Keep the first; debug-log so
+                # high collision rates can be diagnosed in run summaries.
+                logger.debug(
+                    f"[{self.cell}] window dedup: trigger at i={i} → start={start} already used; skipping"
+                )
                 continue
             seen_starts.add(start)
 
