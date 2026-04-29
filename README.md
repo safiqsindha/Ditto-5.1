@@ -34,16 +34,16 @@ cp .env.example .env   # then edit .env
 python -m pytest tests/
 
 # Dry-run evaluation (mock data, no API or LLM calls)
-python -m v5.run_eval --dry-run --output RESULTS/eval_dry_run.json
+python run_eval.py --dry-run --output RESULTS/eval_dry_run.json
 
 # Run the pilot validator (mock data, no API calls)
-python -m v5.run_pilot
+python run_pilot.py
 
 # Run pilot for one cell only
-python -m v5.run_pilot --cells nba
+python run_pilot.py --cells nba
 
 # Save pilot report to JSON
-python -m v5.run_pilot --output RESULTS/pilot_report.json
+python run_pilot.py --output RESULTS/pilot_report.json
 ```
 
 ---

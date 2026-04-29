@@ -15,16 +15,16 @@ Use --dry-run for a zero-cost integration check with mock API responses.
 Usage
 -----
 # Dry run (no API spend, deterministic responses):
-  python -m v5.run_eval --dry-run --output v5/RESULTS/eval_dry_run.json
+  python run_eval.py --dry-run --output RESULTS/eval_dry_run.json
 
 # Real evaluation (~$15 for 1,200 chains/cell × 5 cells × 2 calls + controls):
-  python -m v5.run_eval --output v5/RESULTS/eval_phase_d.json
+  python run_eval.py --output RESULTS/eval_phase_d.json
 
 # Single cell only:
-  python -m v5.run_eval --cells nba --dry-run
+  python run_eval.py --cells nba --dry-run
 
 # Skip CF-3 shuffled controls:
-  python -m v5.run_eval --no-shuffle --dry-run
+  python run_eval.py --no-shuffle --dry-run
 """
 
 from __future__ import annotations

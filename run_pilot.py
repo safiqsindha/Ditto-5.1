@@ -8,8 +8,8 @@ Runs mock data through all five pipelines and validates:
 
 Usage:
   cd /path/to/Ditto-V5
-  python -m v5.run_pilot [--cells fortnite nba csgo rocket_league poker]
-  python -m v5.run_pilot --output v5/RESULTS/pilot_report.json
+  python run_pilot.py [--cells fortnite nba csgo rocket_league poker]
+  python run_pilot.py --output RESULTS/pilot_report.json
 """
 
 from __future__ import annotations

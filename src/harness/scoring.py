@@ -94,7 +94,7 @@ def extract_binary_vectors(
     for b, i in zip(baseline_scores, intervention_scores):
         if exclude_abstain and (b.correct is None or i.correct is None):
             continue
-        baseline_vec.append(bool(b.correct))
-        intervention_vec.append(bool(i.correct))
+        baseline_vec.append(b.correct is True)  # None (abstain) counted as incorrect
+        intervention_vec.append(i.correct is True)
 
     return baseline_vec, intervention_vec

@@ -2,8 +2,8 @@
 Render a pilot JSON report to human-readable markdown.
 
 Usage:
-    python -m v5.src.pilot.render_report v5/RESULTS/pilot_report.json
-    python -m v5.src.pilot.render_report v5/RESULTS/pilot_report.json --output v5/RESULTS/pilot_report.md
+    python -m src.pilot.render_report RESULTS/pilot_report.json
+    python -m src.pilot.render_report RESULTS/pilot_report.json --output RESULTS/pilot_report.md
 """
 
 from __future__ import annotations

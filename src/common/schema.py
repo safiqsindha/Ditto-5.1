@@ -78,6 +78,10 @@ class EventStream:
     events: list[GameEvent] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
 
+    def __post_init__(self):
+        if self.cell not in VALID_CELLS:
+            raise ValueError(f"Unknown cell '{self.cell}'; expected one of {VALID_CELLS}")
+
     def append(self, event: GameEvent) -> None:
         self.events.append(event)
 
