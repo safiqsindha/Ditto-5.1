@@ -19,9 +19,11 @@ from src.cells.poker.poker_t import (
     PokerHandHQT,
     PokerPerSessionT,
     PokerT,
-    _POKER_MIN_ACTIONS,
+    _POKER_MIN_ACTIONS_PER_HAND,
     _POKER_N,
 )
+# Backward-compat alias for tests authored before A7 amendment.
+_POKER_MIN_ACTIONS = _POKER_MIN_ACTIONS_PER_HAND
 from src.common.config import load_cell_configs
 from src.common.schema import ChainCandidate, EventStream, GameEvent, VALID_CELLS
 from src.harness.prompts import PER_CELL_PROMPT_BUILDERS, PokerPromptBuilder
@@ -453,30 +455,36 @@ class TestPokerT:
         for chain in chains:
             assert chain.game_id == stream.game_id
 
-    def test_min_actions_filter(self):
-        """Players with < _POKER_MIN_ACTIONS events are excluded."""
-        stream = EventStream(game_id="thin", cell="poker")
-        # actor_0: 5 events (qualifies), actor_1: 2 events (filtered)
-        for i in range(5):
-            stream.append(GameEvent(
-                timestamp=float(i), event_type="engage_decision",
-                actor="actor_0", location_context={}, raw_data_blob={},
-                cell="poker", game_id="thin", sequence_idx=i,
-            ))
+    def test_min_actions_filter_at_hand_level(self):
+        """A7: filter is at the hand level — hand with fewer than
+        _POKER_MIN_ACTIONS_PER_HAND total player actions is dropped."""
+        # Hand with only 2 events total → dropped under A7
+        stream = EventStream(game_id="thin_hand", cell="poker")
         for i in range(2):
             stream.append(GameEvent(
-                timestamp=float(10 + i), event_type="disengage_decision",
-                actor="actor_1", location_context={}, raw_data_blob={},
-                cell="poker", game_id="thin", sequence_idx=10 + i,
+                timestamp=float(i), event_type="engage_decision",
+                actor=f"actor_{i}", location_context={}, raw_data_blob={},
+                cell="poker", game_id="thin_hand", sequence_idx=i,
+            ))
+        assert self.t.translate(stream) == []
+
+    def test_hand_with_min_actions_qualifies(self):
+        """Hand with exactly _POKER_MIN_ACTIONS_PER_HAND events produces 1 chain."""
+        stream = EventStream(game_id="exactly_three", cell="poker")
+        for i in range(_POKER_MIN_ACTIONS_PER_HAND):
+            stream.append(GameEvent(
+                timestamp=float(i), event_type="engage_decision",
+                actor=f"actor_{i % 6}", location_context={}, raw_data_blob={},
+                cell="poker", game_id="exactly_three", sequence_idx=i,
             ))
         chains = self.t.translate(stream)
-        actors_in_chains = {c.chain_metadata.get("actor_slot") for c in chains}
-        assert 0 in actors_in_chains    # actor_0 qualifies (5 events)
-        # actor_1 has 2 < 3 events → must be excluded
         assert len(chains) == 1
+        assert chains[0].chain_metadata["chain_type"] == "hand_sequence"
 
-    def test_exactly_min_actions_qualifies(self):
-        """Player with exactly _POKER_MIN_ACTIONS events is included."""
+    def test_exactly_min_actions_qualifies_legacy_alias(self):
+        """Sanity: hand-level min_actions filter applies regardless of how
+        actions are distributed across actors. (Replaces pre-A7 per-actor
+        floor test which is now obsolete.)"""
         stream = EventStream(game_id="exact", cell="poker")
         for i in range(_POKER_MIN_ACTIONS):
             stream.append(GameEvent(
@@ -498,10 +506,11 @@ class TestPokerT:
         assert len(ids) == len(set(ids))
 
     def test_chain_metadata_has_chain_type(self):
+        # A7: chain_type is now "hand_sequence" (was "player_hand").
         stream = _make_event_stream(n_events=30)
         chains = self.t.translate(stream)
         for chain in chains:
-            assert chain.chain_metadata["chain_type"] == "player_hand"
+            assert chain.chain_metadata["chain_type"] == "hand_sequence"
 
     def test_chain_metadata_has_streets_covered(self):
         # Generate events with explicit streets so coverage is non-empty
@@ -525,8 +534,10 @@ class TestPokerT:
     def test_cell_property(self):
         assert self.t.cell == "poker"
 
-    def test_multiple_players_each_get_chain(self):
-        """6 actors × 4 events each = 6 chains."""
+    def test_one_chain_per_hand_with_multiple_actors(self):
+        """A7: one stream = one hand → one chain regardless of how many
+        actors participated. Multi-actor events are interleaved by
+        sequence_idx into a single hand_sequence chain."""
         stream = EventStream(game_id="multi", cell="poker")
         for actor_idx in range(6):
             for j in range(4):
@@ -538,7 +549,11 @@ class TestPokerT:
                     sequence_idx=i,
                 ))
         chains = self.t.translate(stream)
-        assert len(chains) == 6
+        assert len(chains) == 1
+        # The chain should reference all 6 actors who participated in the hand
+        assert chains[0].chain_metadata["n_actors_in_window"] >= 1
+        # N=8 truncation preserved
+        assert len(chains[0].events) == 8
 
 
 # ---------------------------------------------------------------------------

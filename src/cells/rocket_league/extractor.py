@@ -116,7 +116,13 @@ class RocketLeagueExtractor:
                 timestamp=ts,
                 event_type="objective_capture",
                 actor=actor,
-                location_context={"synthetic": True, "source": "ballchasing_api"},
+                location_context={
+                    "synthetic": True, "source": "ballchasing_api",
+                    "team_color": team_key,
+                    "duration_s": duration,
+                    "score_blue": int(record.get("blue", {}).get("stats", {}).get("core", {}).get("goals", 0)),
+                    "score_orange": int(record.get("orange", {}).get("stats", {}).get("core", {}).get("goals", 0)),
+                },
                 raw_data_blob={},
                 cell="rocket_league",
                 game_id=stream.game_id,
@@ -131,16 +137,23 @@ class RocketLeagueExtractor:
             core = p.get("stats", {}).get("core", {})
             boost = p.get("stats", {}).get("boost", {})
 
-            player_events: list[tuple[str, int]] = [
-                ("engage_decision",    int(core.get("shots", 0))),
-                ("disengage_decision", int(core.get("saves", 0))),
-                ("team_coordinate",    int(core.get("assists", 0))),
-                ("risk_accept",        int(core.get("demo", {}).get("inflicted", 0))),
+            # A6: include `action_label` so the model can distinguish shot
+            # vs save vs assist vs demo vs boost-pickup beyond just the
+            # abstract `event_type` bucket. Best-effort within BallChasing
+            # aggregate-stat data ceiling.
+            player_events: list[tuple[str, int, str]] = [
+                ("engage_decision",    int(core.get("shots", 0)),                          "shot"),
+                ("disengage_decision", int(core.get("saves", 0)),                          "save"),
+                ("team_coordinate",    int(core.get("assists", 0)),                        "assist"),
+                ("risk_accept",        int(core.get("demo", {}).get("inflicted", 0)),     "demo_inflicted"),
                 ("resource_gain",      int(boost.get("count_collected_big", 0))
-                                       + int(boost.get("count_collected_small", 0))),
+                                       + int(boost.get("count_collected_small", 0)),       "boost_pickup"),
             ]
 
-            for event_type, count in player_events:
+            score_blue = int(record.get("blue", {}).get("stats", {}).get("core", {}).get("goals", 0))
+            score_orange = int(record.get("orange", {}).get("stats", {}).get("core", {}).get("goals", 0))
+
+            for event_type, count, action_label in player_events:
                 if count == 0:
                     continue
                 interval = duration / (count + 1)
@@ -151,7 +164,14 @@ class RocketLeagueExtractor:
                         timestamp=ts,
                         event_type=event_type,
                         actor=actor,
-                        location_context={"synthetic": True, "source": "ballchasing_api"},
+                        location_context={
+                            "synthetic": True, "source": "ballchasing_api",
+                            "team_color": team_key,
+                            "duration_s": duration,
+                            "score_blue": score_blue,
+                            "score_orange": score_orange,
+                            "action_label": action_label,
+                        },
                         raw_data_blob={},
                         cell="rocket_league",
                         game_id=stream.game_id,

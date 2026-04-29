@@ -778,3 +778,129 @@ After the smoke test passed end-to-end on Pluribus, we re-examined the data: eve
 **Verified distribution (sample_target=3500):** 854/854/854/854 across 1000/200/400/600NL + 83 WSOP = 3,499 hands. Chains @ G2 = 1,638 (1.36× target).
 
 ---
+
+## Decision D-38: NBA chain rendering — surface terminal-action, foul counts, possession-elapsed time
+
+**Date:** 2026-04-29
+
+**Context:** Pre-Phase-D pilot (n=200 chains/cell × 4,010 batched Haiku calls, $0.70 actual spend) produced clean signal for PUBG only. NBA primary h=0.00 with **0% YES rate** (0/800 responses). The model is not engaging at all — not abstaining, just consistently rejecting.
+
+Independent reads from two reviewers (Sonnet round 3, Opus round 4) converged on a single diagnosis: the NBA constraint context refers to the **24-second shot clock** and **6-foul ejection rule**, but the rendered chain does not surface those variables. NBAExtractor (`src/cells/nba/extractor.py`) compresses real PlayByPlayV3 actionTypes ("Made Shot", "Missed Shot", "Foul", "Rebound") into four abstract buckets (`engage_decision`, `resource_gain`, `resource_spend`, `risk_accept`) and discards possession-elapsed time and per-actor foul counts. The model has no observable variable to test the constraint against, so it default-rejects.
+
+**Question:** Add the constraint-relevant fields to the chain rendering, or accept and report?
+
+**Decision:** Add the fields. Specifically:
+- `NBAExtractor._make_possession_event` extends `location_context` with: `terminal_action` (already present, will surface in prompt), per-actor cumulative `foul_count` (computed in extractor by walking the action stream), `possession_elapsed_s` (clock_start − clock_end converted to seconds via existing `parse_clock`).
+- `NBAPromptBuilder.format_event` overrides the base class `_summarize_context` cap to render the new fields explicitly per event line.
+
+**Reasoning:** This is a chain-rendering bug, not a methodology change. The pre-registered Q6-A locks granularity at "possession-level"; A4 does NOT change the granularity, the chain length (N=5), the constraint wording, or the McNemar test. It surfaces information that was thrown away by the extractor when the original NBAExtractor was written for V2 schema; the V3 rewrite carried over the abstraction without re-evaluating whether the abstract event types were sufficient signal for downstream constraint reasoning.
+
+**Alternatives considered:**
+- *Weaken the NBA constraint to match what the chain shows*: Opus suggested this; rejected because it makes the constraint near-tautological and reduces test discriminating power.
+- *Switch to play-level granularity (Q6-B)*: rejected; Q6-A locked, would require a larger SPEC amendment than this surgical rendering fix.
+
+**Code impact:**
+- `src/cells/nba/extractor.py`: foul count tracking + possession-elapsed time in `_make_possession_event`.
+- `src/harness/prompts.py`: `NBAPromptBuilder.format_event` override surfaces new fields.
+- Existing NBA tests updated to match new context shape.
+
+**Reversibility:** Easy — the new fields are additive; reverting just removes them from the renderer.
+
+**Pre-registration discipline:** A4 was filed BEFORE code change so the pilot data did not influence which fields to surface. The fields were chosen from what the locked constraint wording requires — derived mechanically from the constraint clauses rather than chosen post-hoc.
+
+---
+
+## Decision D-39: CS:GO chain rendering — best-effort enrichment from FACEIT aggregate stats
+
+**Date:** 2026-04-29
+
+**Context:** Pilot showed CS:GO primary h=+0.14 with **0.4% YES rate** (3/800). Diagnosis: the FACEIT API path (`src/cells/csgo/extractor.py:_extract_faceit`) produces synthetic events distributed across a fixed 115-second round at mathematically spaced intervals. Each event carries `"synthetic": True` and no real round-state variable (no bomb-site, no alive/dead, no round outcome). The constraint mentions "bomb plants only at sites A or B" but the chain has no bomb-site field at all.
+
+The methodologically clean fix is to switch to higher-fidelity extraction: the existing `_extract_awpy` path parses real `.dem` demo files via the awpy library. **awpy installed cleanly on Python 3.11 (2.0.2)** but the CS:GO pipeline currently fetches only JSON metadata from FACEIT — switching requires sourcing `.dem` binaries (HLTV demo archive has no public API; manual download or scraping required) and wiring the pipeline to download/cache binaries. That's days of work and tens of GB of disk.
+
+**Question:** Block the re-pilot on a full data-source switch, or do best-effort renderer enrichment within the FACEIT aggregate-stat ceiling?
+
+**Decision:** Best-effort renderer enrichment now; defer the full data-source switch to v5.1 follow-up if A5 doesn't move the needle.
+
+Specifically:
+- `CSGOPromptBuilder.format_event` surfaces the real fields from `raw_data_blob`: `team_id` (faction1/faction2), `kills`, `deaths`, `headshots`, `mvps`, `round_winner` if present.
+- The chain remains synthetic-aggregate at the event-time-distribution level — A5 does NOT change that.
+- **Pre-committed re-pilot success criterion:** if A5 enrichment produces SIG primary on CS:GO, methodology is validated. If still flat after A5, the codebase ships with a v5.1 follow-up issue to source `.dem` files and switch to `_extract_awpy`.
+
+**Reasoning:** A5 is honest about the data ceiling. The FACEIT path was built for low-friction setup; it is not constraint-verifiable by construction, but the underlying JSON does carry per-player per-round aggregates that can be surfaced. A renderer enrichment is cheap to try and tells us whether the diagnosis (constraint-chain content mismatch) explains everything or whether the synthetic-event-level distribution is also a bottleneck. If even with team_id + kills + headshots the model can't engage, that's evidence for the data-ceiling explanation.
+
+**Alternatives considered:**
+- *Full data-source switch in this session*: rejected on cost (multi-day work + binary sourcing) without first validating the diagnosis at lower lift.
+- *Weaken the constraint*: rejected (same reason as D-38).
+
+**Code impact:**
+- `src/harness/prompts.py`: `CSGOPromptBuilder.format_event` override.
+
+**Reversibility:** Trivial.
+
+**v5.1 follow-up if A5 fails:**
+- Source HLTV demo archive (curate ~150 high-quality CS2 demos).
+- Wire `CSGOPipeline.fetch()` to download `.dem` files.
+- Switch extractor dispatch to `_extract_awpy` (already implemented).
+- Verify constraint-verifiable fields (alive/dead state, bomb_site) propagate through prompt.
+
+---
+
+## Decision D-40: Rocket League chain rendering — best-effort enrichment from BallChasing aggregate stats
+
+**Date:** 2026-04-29
+
+**Context:** Pilot showed RL primary h=+0.14 with **0.75% YES rate** (6/800). Same diagnosis as D-39: the BallChasing path (`src/cells/rocket_league/extractor.py`) generates synthetic events distributed across replay duration with `"synthetic": True` and no per-hit boost amounts, no goal markers, no demo events. The constraint mentions "boost meter caps at 100" but no event in the chain has a boost level.
+
+The methodologically clean fix is to switch to higher-fidelity extraction via carball or rrrocket. **carball failed to install on Python 3.11** (requires unmaintained pandas build). rrrocket is a Rust CLI not currently wrapped; would need either a Rust toolchain + custom Python wrapper, or a switch to the maintained `boxcars` Rust library. That's a v5.1 lift of similar magnitude to D-39's awpy switch.
+
+**Question:** Same as D-39 — block the re-pilot or do best-effort renderer enrichment?
+
+**Decision:** Same path as A5 — best-effort renderer enrichment now; defer full data-source switch.
+
+Specifically:
+- `RocketLeaguePromptBuilder.format_event` surfaces real BallChasing per-player aggregates from `raw_data_blob`: `team_color` (blue/orange), `score` (player score), `boost_used`, `demos_inflicted`, `goal_count`, `save_count`, `mvp` flag if present.
+- Same pre-committed criterion: if A6 produces SIG primary on RL, validated. If not, v5.1 follow-up.
+
+**Reasoning, Alternatives, Reversibility, v5.1 follow-up:** all parallel to D-39. Substituting awpy → carball/rrrocket/boxcars and FACEIT → BallChasing as appropriate.
+
+**Code impact:**
+- `src/harness/prompts.py`: `RocketLeaguePromptBuilder.format_event` override.
+
+---
+
+## Decision D-41: Poker chain unit — per-(actor, hand) → per-hand sequence
+
+**Date:** 2026-04-29
+
+**Context:** Pilot showed Poker primary h=0.00 with only **5 chains** generated from 3,499 hands. PokerT (`src/cells/poker/poker_t.py`) groups events by `(actor, hand)` and requires `min_actions=3` per group (P-4 lock). Real cash games average ~7.5 *total* player actions per hand spread across 6 actors; most actors fold pre-flop with 1–2 actions. The 3-action-per-actor floor discarded 99.9% of (actor, hand) pairs.
+
+This is not a rendering bug; it's a chain-unit definition that doesn't fit the empirical data shape. The pre-Phase-B mock generator assumed 24 events/hand which biased P-3 (N=8) and P-4 (3-action floor) toward per-actor grouping; the real cash-game data has a very different distribution.
+
+**Question:** Relax the per-actor floor (keep actor grouping but allow 1-action chains), redefine the chain unit to per-hand (drop actor grouping), or change the corpus to high-action-count tournament hands only?
+
+**Decision:** Redefine chain unit as **per-hand sequence**. One chain = one hand's full action sequence (preflop + flop + turn + river), all actors interleaved by `sequence_idx`. The N=8 truncation (P-3) is preserved — first 8 player actions per hand. The min_actions filter moves to the hand level: keep hands with ≥3 total player actions (drops pure blind-post + immediate-fold hands).
+
+**Violates pre-registered decisions P-1 (chain unit = one player's decisions within a single hand) and P-4 (≥3 actions per actor per hand).** This is the most substantive amendment in the A4–A7 batch and is treated as a formal methodology change, not a bugfix.
+
+**Reasoning:**
+- **The locked unit is empirically inviable.** With real cash data the per-actor floor produces 5 chains from 3,499 hands. Pre-Phase-D power requires n≈1,200; we'd need ~800,000 hands at the current filter rate, which is the entire HandHQ corpus.
+- **Per-hand sequence is methodologically defensible.** The constraint context wording ("Rules: fold/check/call/bet/raise up to stack...") reads cleanly against a multi-actor sequence; the model can verify "no folded player acts again" or "action proceeds clockwise" against an interleaved multi-actor chain just as well as against a single-actor chain.
+- **Chain length N=8 (P-3) is preserved**, so prompt size and tokenization are unchanged.
+- **Existing CSGOT and RocketLeagueT already use multi-actor chains** (round/play sequences across multiple players); A7 brings poker into alignment with that pattern.
+
+**Alternatives considered:**
+- *Relax `min_actions` to 1*: would produce many trivial chains (single fold) with no constraint-testable content. Rejected.
+- *Filter corpus to deep hands (≥10 actions)*: technically possible but reduces sample size dramatically and selects for atypical hands (showdowns), which biases the corpus away from typical play. Rejected.
+- *Switch corpus to tournament hands*: tournament hands have higher action density but different decision distribution (ICM, blind levels). Cleaner to fix the unit definition than to change what we're testing on.
+
+**Code impact:**
+- `src/cells/poker/poker_t.py`: replace `_group_by_actor` with per-hand grouping; filter at hand level instead of actor level.
+- `src/cells/poker/__init__.py` if public API changes.
+- Tests in `tests/test_poker.py` updated to match new chain definition.
+
+**Reversibility:** Easy at the code level — the per-actor algorithm is a known-working alternative if A7 produces undesirable chain shape. Methodologically, reverting would require explaining why P-1 was un-amended.
+
+**Re-pilot success criterion for poker:** under A7, expect ~3,000 hands with ≥3 actions = ~3,000 chains pre-Gate-2. If <500 chains generated, the per-hand floor is too aggressive and we move to "hand with ≥2 player actions".
+
+---

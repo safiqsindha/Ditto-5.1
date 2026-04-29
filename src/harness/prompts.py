@@ -234,7 +234,13 @@ class PUBGPromptBuilder(PromptBuilder):
 
 
 class NBAPromptBuilder(PromptBuilder):
-    """N-5 constraint context. Wording locked in T-design review (2026-04-28)."""
+    """N-5 constraint context. Wording locked in T-design review (2026-04-28).
+
+    A4 (2026-04-29): format_event overridden to surface terminal_action,
+    actor_foul_count_after, and possession_elapsed_s — the variables the
+    locked constraint context (24-sec shot clock, 6-foul ejection,
+    possession-change rule) refers to.
+    """
 
     def __init__(self):
         super().__init__(cell="nba")
@@ -249,9 +255,45 @@ class NBAPromptBuilder(PromptBuilder):
     def format_question(self, chain: ChainCandidate) -> str:
         return _CLASSIFY_QUESTION.format(domain="NBA basketball")
 
+    def format_event(self, event: GameEvent, idx: int, actor_map: dict | None = None) -> str:
+        anon = actor_map.get(event.actor, "Player_?") if actor_map else "Player_?"
+        ctx = event.location_context or {}
+        # A4 fields: surface terminal action label, foul count, elapsed time.
+        # Fall back to base behavior if the extractor hasn't populated them
+        # (e.g. mock data path).
+        terminal = ctx.get("terminal_action") or "?"
+        foul = ctx.get("actor_foul_count_after")
+        elapsed = ctx.get("possession_elapsed_s")
+        period = ctx.get("period", "?")
+        clock = ctx.get("clock_end") or ctx.get("clock_start") or ""
+        score = f"{ctx.get('score_home','?')}-{ctx.get('score_away','?')}"
+
+        parts = [f"action={terminal}"]
+        if elapsed is not None:
+            parts.append(f"possession_elapsed_s={elapsed}")
+        if foul is not None:
+            parts.append(f"actor_total_fouls={foul}")
+        parts.append(f"period={period}")
+        if clock:
+            parts.append(f"clock={clock}")
+        parts.append(f"score={score}")
+        ctx_str = ", ".join(parts)
+
+        return (
+            f"{idx:>3}. t={event.timestamp:>7.1f}s | "
+            f"{event.event_type:<22} | actor={anon:<12} "
+            f"| {ctx_str}"
+        )
+
 
 class CSGOPromptBuilder(PromptBuilder):
-    """C-5 constraint context. Wording locked in T-design review (2026-04-28)."""
+    """C-5 constraint context. Wording locked in T-design review (2026-04-28).
+
+    A5 (2026-04-29): format_event overridden to surface real per-event fields
+    from FACEIT raw stats (action_label, team_id, round, map, score). Best-
+    effort within FACEIT aggregate-stat data ceiling. If A5 fails to move
+    signal, CS:GO graduates to v5.1 awpy demo extraction.
+    """
 
     def __init__(self):
         super().__init__(cell="csgo")
@@ -266,9 +308,52 @@ class CSGOPromptBuilder(PromptBuilder):
     def format_question(self, chain: ChainCandidate) -> str:
         return _CLASSIFY_QUESTION.format(domain="Counter-Strike")
 
+    def format_event(self, event: GameEvent, idx: int, actor_map: dict | None = None) -> str:
+        anon = actor_map.get(event.actor, "Player_?") if actor_map else "Player_?"
+        ctx = event.location_context or {}
+        action_label = ctx.get("action_label") or "?"
+        team_id = ctx.get("team_id") or ""
+        # CF-4=B: anonymise team identity to "team_A"/"team_B". Use a stable
+        # deterministic hash (md5 first byte) so the same team_id always
+        # maps to the same slot across runs (Python's built-in hash() is
+        # PYTHONHASHSEED-randomized per process).
+        team_slot = self._team_slot(team_id, ctx)
+        winner_id = ctx.get("winner_faction", "")
+        # CF-4=B: also anonymise final_winner — raw team UUIDs are PII-equivalent
+        # for the experiment. Map to team_A / team_B / "(undecided)".
+        winner_slot = self._team_slot(winner_id, ctx) if winner_id else "(undecided)"
+        round_num = ctx.get("round", "?")
+        map_name = ctx.get("map", "?")
+        score = ctx.get("match_score", "?")
+        ctx_str = (
+            f"action={action_label}, team={team_slot}, round={round_num}, "
+            f"map={map_name}, final_score={score}, final_winner={winner_slot}"
+        )
+        return (
+            f"{idx:>3}. t={event.timestamp:>7.1f}s | "
+            f"{event.event_type:<22} | actor={anon:<12} "
+            f"| {ctx_str}"
+        )
+
+    @staticmethod
+    def _team_slot(team_id: str, ctx: dict) -> str:
+        """Deterministic team slot assignment (CF-4=B). Same team_id always
+        maps to the same A/B slot across runs (md5-stable, not Python hash())."""
+        if not team_id:
+            return "?"
+        import hashlib
+        h = hashlib.md5(team_id.encode("utf-8")).digest()[0]
+        return "team_A" if (h & 1) == 0 else "team_B"
+
 
 class RocketLeaguePromptBuilder(PromptBuilder):
-    """R-5 constraint context. Wording locked in T-design review (2026-04-28)."""
+    """R-5 constraint context. Wording locked in T-design review (2026-04-28).
+
+    A6 (2026-04-29): format_event overridden to surface real per-event fields
+    from BallChasing aggregate stats (action_label, team_color, score,
+    duration). Best-effort within data ceiling. If A6 fails, RL graduates
+    to v5.1 carball/rrrocket replay extraction.
+    """
 
     def __init__(self):
         super().__init__(cell="rocket_league")
@@ -282,6 +367,29 @@ class RocketLeaguePromptBuilder(PromptBuilder):
 
     def format_question(self, chain: ChainCandidate) -> str:
         return _CLASSIFY_QUESTION.format(domain="Rocket League")
+
+    def format_event(self, event: GameEvent, idx: int, actor_map: dict | None = None) -> str:
+        anon = actor_map.get(event.actor, "Player_?") if actor_map else "Player_?"
+        ctx = event.location_context or {}
+        action_label = ctx.get("action_label") or "?"
+        team_color = ctx.get("team_color") or event.actor_team or "?"
+        score_b = ctx.get("score_blue", "?")
+        score_o = ctx.get("score_orange", "?")
+        duration = ctx.get("duration_s")
+        ctx_str = (
+            f"action={action_label}, team={team_color}, "
+            f"final_score=blue:{score_b}–orange:{score_o}"
+        )
+        if duration is not None:
+            try:
+                ctx_str += f", match_duration_s={float(duration):.0f}"
+            except (TypeError, ValueError):
+                pass
+        return (
+            f"{idx:>3}. t={event.timestamp:>7.1f}s | "
+            f"{event.event_type:<22} | actor={anon:<12} "
+            f"| {ctx_str}"
+        )
 
 
 class PokerPromptBuilder(PromptBuilder):

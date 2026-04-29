@@ -83,24 +83,37 @@ class CSGOExtractor:
         seq = 0
 
         for map_entry in record.get("rounds", []):
-            map_name = map_entry.get("round_stats", {}).get("Map", "unknown")
-            n_rounds = max(1, int(map_entry.get("round_stats", {}).get("Rounds", 30)))
+            round_stats = map_entry.get("round_stats", {})
+            map_name = round_stats.get("Map", "unknown")
+            n_rounds = max(1, int(round_stats.get("Rounds", 30)))
+            # A5: surface round outcome (winner) + score so the chain has
+            # round-state markers the constraint context can be checked
+            # against. Best-effort within FACEIT aggregate data.
+            winner_faction = round_stats.get("Winner", "")
+            score_str = str(round_stats.get("Score", ""))
             round_duration = 115.0  # average CS2 round ~115s (buy + play)
 
             for team in map_entry.get("teams", []):
+                # A5: track team identity so the constraint's T-vs-CT framing
+                # has something to verify against in the rendered chain.
+                team_id = team.get("team_id", "")
+                team_name = team.get("nickname", team.get("name", "team"))
                 for player in team.get("players", []):
                     actor = player.get("player_id", player.get("nickname", "unknown"))
                     stats = player.get("player_stats", {})
 
-                    player_events: list[tuple[str, int]] = [
-                        ("engage_decision",   int(stats.get("Kills", 0))),
-                        ("team_coordinate",   int(stats.get("Assists", 0))),
-                        ("ability_use",       int(stats.get("Flash Count", 0))),
-                        ("zone_enter",        int(stats.get("Entry Count", 0))),
-                        ("objective_capture", int(stats.get("MVPs", 0))),
+                    # A5: also surface kill action label so the chain has
+                    # observable engagement type ("kill", "assist", "flash",
+                    # "entry", "MVP") rather than only the abstract bucket.
+                    player_events: list[tuple[str, int, str]] = [
+                        ("engage_decision",   int(stats.get("Kills", 0)),       "kill"),
+                        ("team_coordinate",   int(stats.get("Assists", 0)),     "assist"),
+                        ("ability_use",       int(stats.get("Flash Count", 0)), "flash"),
+                        ("zone_enter",        int(stats.get("Entry Count", 0)), "entry"),
+                        ("objective_capture", int(stats.get("MVPs", 0)),        "mvp"),
                     ]
 
-                    for etype, count in player_events:
+                    for etype, count, action_label in player_events:
                         if count == 0:
                             continue
                         interval = n_rounds / (count + 1)
@@ -114,6 +127,11 @@ class CSGOExtractor:
                                 location_context={
                                     "round": round_num,
                                     "map": map_name,
+                                    "team_id": team_id,
+                                    "team_name": team_name,
+                                    "winner_faction": winner_faction,
+                                    "match_score": score_str,
+                                    "action_label": action_label,
                                     "synthetic": True,
                                     "source": "faceit_api",
                                 },

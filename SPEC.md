@@ -10,25 +10,35 @@
 
 ## ⚠ Amendments Log
 
-Three amendments have been adopted after SPEC v1.0 sign-off due to data-acquisition
-constraints that emerged during real-data integration. Methodology
-(Q1–Q4 + statistical design) is **unchanged**; only data-source identity and
-upstream sample sizes shifted. **All amendments signed off by both authors
-(Lead Author + Myriam) as of 2026-04-28.** See [DECISION_LOG.md](DECISION_LOG.md)
+Seven amendments have been adopted after SPEC v1.0 sign-off. A1–A3 were
+data-acquisition corrections during real-data integration. A4–A7 (2026-04-29)
+respond to the n=200/cell pre-Phase-D pilot, which produced clean signal for
+PUBG only; the other 4 cells were flat because the rendered chain content
+did not surface the variables their constraint contexts referenced. The
+amendments correct chain-content rendering and the poker chain unit so the
+constraints become verifiable from the chain. **All amendments signed off
+by both authors (Lead Author + Myriam).** See [DECISION_LOG.md](DECISION_LOG.md)
 for full framing.
 
-| Amendment | Original cell | Replaced with | Reason | Sign-off | DECISION_LOG ref |
-|-----------|---------------|---------------|--------|----------|------------------|
-| **A1** (pre-current session) | Hearthstone | **Poker** (NLHE, PHH Dataset v3) | HSReplay API friction; PHH Dataset is open and methodologically equivalent for the card-game decision class | ✅ both authors, 2026-04-27 | (reflected in code & cells.yaml) |
-| **A2** (2026-04-28) | Fortnite | **PUBG** (Krafton developer API) | Epic CDN locked down public chunk-data access in 2025–2026; PUBG provides documented public API with no rate limit on /matches and telemetry | ✅ both authors, 2026-04-28 | D-35 (PUBG swap), D-36 (PUBG bot filter) |
-| **A3** (2026-04-28) | Poker corpus: Pluribus + WSOP 2023 | **Poker corpus: HandHQ (200NL–1000NL stratified) + WSOP 2023, all human** | Pluribus hands include Facebook's superhuman bot in 1 of 6 seats, contaminating ~17% of actions and biasing chains toward non-human strategy. Switched to HandHQ (anonymized human cash games) filtered to 200NL–1000NL for GTO-aware play, plus WSOP 2023 final-table. Sample target raised 300 → 3,500 to account for ~7.5 events/hand | ✅ both authors, 2026-04-28 | D-37 (corpus swap + stakes filter clarification) |
+| Amendment | What changed | Reason | Sign-off | DECISION_LOG ref |
+|-----------|--------------|--------|----------|------------------|
+| **A1** (pre-current session) | Hearthstone → **Poker** (NLHE, PHH Dataset v3) | HSReplay API friction; PHH Dataset is open and methodologically equivalent for the card-game decision class | ✅ both authors, 2026-04-27 | (reflected in code & cells.yaml) |
+| **A2** (2026-04-28) | Fortnite → **PUBG** (Krafton developer API) | Epic CDN locked down public chunk-data access in 2025–2026; PUBG provides documented public API with no rate limit on /matches and telemetry | ✅ both authors, 2026-04-28 | D-35 (PUBG swap), D-36 (PUBG bot filter) |
+| **A3** (2026-04-28) | Poker corpus: Pluribus + WSOP 2023 → **HandHQ (200NL–1000NL stratified) + WSOP 2023, all human** | Pluribus hands include Facebook's superhuman bot in 1 of 6 seats, contaminating ~17% of actions and biasing chains toward non-human strategy. Switched to HandHQ filtered to 200NL–1000NL for GTO-aware play. Sample target 300 → 3,500 to account for ~7.5 events/hand | ✅ both authors, 2026-04-28 | D-37 (corpus swap + stakes filter clarification) |
+| **A4** (2026-04-29) | NBA chain rendering: surface terminal-action label, per-actor cumulative foul count, and possession-elapsed time in the prompt | Pre-Phase-D pilot showed NBA primary h=0.00 with 0% YES rate. Diagnosis: NBAExtractor compresses real action types ("Made Shot", "Foul") into abstract buckets; the rendered chain doesn't surface the variables (shot-clock state, foul counts) the locked constraint refers to. Fix surfaces what is already extracted from PlayByPlayV3 + adds running foul count and possession-elapsed time at the extractor layer. **Q6-A possession-level granularity preserved.** | ✅ both authors, 2026-04-29 | D-38 |
+| **A5** (2026-04-29) | CS:GO chain rendering: surface real per-round fields from `raw_data_blob` (team_id, kills, deaths, headshots, MVPs, round outcome) into the prompt; **best-effort within FACEIT aggregate-stat data ceiling** | Pilot showed CS:GO primary h=+0.14 with 0.4% YES rate. Diagnosis: FACEIT path generates synthetic events from aggregate stats — events have `"synthetic": True` and no constraint-verifiable detail. Best-effort fix surfaces the underlying team/round-stat fields so the chain isn't pure abstract decisions. **A5 does NOT switch the data source**; if the renderer enrichment doesn't move the needle, CS:GO graduates to v5.1 awpy demo extraction (deferred — needs binary `.dem` file sourcing). | ✅ both authors, 2026-04-29 | D-39 |
+| **A6** (2026-04-29) | RL chain rendering: surface real player/team fields from `raw_data_blob` (team_color, score, boost_used, demos, MVP) into the prompt; **best-effort within BallChasing aggregate-stat data ceiling** | Pilot showed RL primary h=+0.14 with 0.75% YES rate. Same diagnosis as A5 — BallChasing JSON is per-player aggregates with no per-hit detail. Same deferral: if enrichment fails, RL graduates to v5.1 carball/rrrocket replay extraction. | ✅ both authors, 2026-04-29 | D-40 |
+| **A7** (2026-04-29) | Poker chain unit: per-(actor, hand) → **per-hand sequence**; `min_actions=3` filter applied at the hand level (was per-actor) | Pilot showed only 5 chains survived from 3,499 hands. Real cash games average 1–2 actions per actor per hand (most fold quickly), so the per-actor 3-action filter discarded 99.9% of (actor, hand) pairs. Per-hand chain captures the full action flow. **Violates pre-registered P-1 ("chain unit = one player's decisions within a single hand") and P-4 (3-action-per-actor floor).** P-3 (N=8) preserved. | ✅ both authors, 2026-04-29 | D-41 |
 
 **Methodology preserved across all amendments:**
 - Sample target: 1,200 chains/cell (Q3) — unchanged
 - Bonferroni divisor = 5 (Q2) — unchanged (still 5 cells)
-- Chain length per cell (Q4) — PUBG inherits Fortnite's 8 (zone-rotation window); Poker locked at 8
-- Constraint type: PUBG = zone boundary + elimination causality (mirrors original Fortnite F-1); Poker = action-on-street (per Q8-A)
-- A3 changes the *upstream sample size* (300→3,500 hands) but does not alter the per-cell chain target, the per-event normalization, the chain construction, or the McNemar harness. The change is a corpus-purity correction, not a design change.
+- Chain length per cell (Q4) — PUBG=8, NBA=5, CS:GO=10, RL=12, Poker=8 — unchanged
+- Constraint context wording (T-design review 2026-04-28) — unchanged for all 5 cells; A4–A6 modify what the chain renders, not what the constraint says
+- Pre-registered Bayesian/frequentist machinery (McNemar, bootstrap CI, CF-3=A shuffle controls, Cohen's h) — unchanged
+
+**Re-pilot success criterion (Opus's recommendation, signed off 2026-04-29):**
+After A4–A7 implementation, re-run pilot at n=200/cell. If **≥3 of 5 cells produce primary p_corr < 0.05 with opposite-sign shuffle h** (no format leakage flag), proceed to Phase D. If fewer cells signal, the framework asymmetry is the publishable finding — do not iterate further on rendering, and treat A5/A6 data-source switch as v5.1 follow-up.
 
 The text below references the original cells in places (Fortnite, Hearthstone)
 to preserve the historical signed record. Active configs are authoritative

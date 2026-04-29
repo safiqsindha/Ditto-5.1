@@ -83,6 +83,11 @@ class NBAExtractor:
         Possession-level extraction over PlayByPlayV3's `game.actions` array.
         Each possession yields one summary GameEvent representing the
         offensive trip's primary decision (the possession-ending action).
+
+        A4 (2026-04-29): also surfaces per-actor cumulative foul counts and
+        possession-elapsed time so the locked NBA constraint context
+        (24-second shot clock, 6-foul ejection) becomes verifiable from the
+        rendered chain.
         """
         game_id = self._get_game_id(record)
         stream = EventStream(game_id=game_id, cell="nba")
@@ -98,12 +103,35 @@ class NBAExtractor:
             if parsed:
                 play_events.append(parsed)
 
+        # A4: pre-compute running foul counts per actor across all plays so
+        # _make_possession_event can attach the count for the actor whose
+        # decision the possession event is attributed to.
+        foul_counts_at_play: list[dict[str, int]] = []
+        running: dict[str, int] = {}
+        for play in play_events:
+            if play.get("actiontype") == "Foul":
+                actor = play.get("actor")
+                if actor:
+                    running[actor] = running.get(actor, 0) + 1
+            # Snapshot the cumulative counts AFTER this play.
+            foul_counts_at_play.append(dict(running))
+
         possessions = self._group_into_possessions(play_events)
 
+        # Re-index possessions so each one knows its global play-index range,
+        # which lets _make_possession_event read the foul snapshot at the
+        # terminal play.
+        play_index = 0
         for seq, plays in enumerate(possessions):
-            ev = self._make_possession_event(plays, game_id, seq)
+            terminal_play_idx = play_index + len(plays) - 1
+            ev = self._make_possession_event(
+                plays, game_id, seq,
+                foul_counts_at_terminal=foul_counts_at_play[terminal_play_idx]
+                if foul_counts_at_play else {},
+            )
             if ev:
                 stream.append(ev)
+            play_index += len(plays)
 
         return stream
 
@@ -145,11 +173,28 @@ class NBAExtractor:
         return possessions
 
     def _make_possession_event(
-        self, plays: list[dict], game_id: str, seq: int
+        self, plays: list[dict], game_id: str, seq: int,
+        foul_counts_at_terminal: dict[str, int] | None = None,
     ) -> GameEvent | None:
         if not plays:
             return None
         terminal = plays[-1]
+
+        # A4: possession-elapsed time = wall time between possession start
+        # and terminal action, in seconds. parse_clock returns absolute
+        # seconds-from-game-start, so the difference is well-defined and
+        # handles period boundaries correctly.
+        possession_elapsed_s = max(0.0, terminal["timestamp"] - plays[0]["timestamp"])
+
+        # A4: foul count for the actor attributed to this possession's
+        # terminal action. Used by NBAPromptBuilder to render the 6-foul
+        # ejection rule's verifiable variable.
+        terminal_actor_foul_count = 0
+        if foul_counts_at_terminal:
+            terminal_actor_foul_count = foul_counts_at_terminal.get(
+                terminal.get("actor", ""), 0
+            )
+
         return GameEvent(
             timestamp=plays[0]["timestamp"],
             event_type=terminal["event_type"],
@@ -163,6 +208,9 @@ class NBAExtractor:
                 "score_home": terminal.get("score_home", ""),
                 "score_away": terminal.get("score_away", ""),
                 "terminal_action": terminal["actiontype"],
+                # A4 fields:
+                "possession_elapsed_s": round(possession_elapsed_s, 1),
+                "actor_foul_count_after": terminal_actor_foul_count,
             },
             raw_data_blob={"plays": [p["raw"] for p in plays]},
             cell="nba",
