@@ -4,7 +4,7 @@
 
 Five-cell parallel replication of v3's constraint-chain detection methodology across new game domains. Subject model: Claude Haiku.
 
-**Status:** SPEC v1.0 signed (both authors, 2026-04-27). Phase A complete (autonomous infrastructure work). Phase B (T design, joint authoring) pending.  
+**Status:** SPEC v1.0 signed (both authors, 2026-04-27). Phase A + B complete (infrastructure, poker cell, harness, CF-3=A leakage analysis). Phase C/D (T implementation, evaluation runs) pending SPEC sign-off.
 **Reference experiments:** v3 (Chess/Checkers), v4 (single-cell methodology characterization).
 
 ---
@@ -15,9 +15,9 @@ Five-cell parallel replication of v3's constraint-chain detection methodology ac
 |------|---------|-------------|---------------|
 | `fortnite` | FNCS / Cash Cup 2024 | Epic CDN replays + FortniteReplayDecompressor | 200 matches |
 | `nba` | 2023-24 season | NBA Stats API (PlayByPlayV3) | 300 games |
-| `csgo` | 2024 S-tier (CS2) | FACEIT API v4 (`FACEIT_API_KEY`) | 150 maps |
-| `rocket_league` | RLCS 2024 | BallChasing.com + carball | 250 replays |
-| `hearthstone` | 2024 Legend ladder | HSReplay API + hslog | 300 games |
+| `csgo` | 2024 S-tier (CS2) | HLTV demo archive + awpy | 150 maps |
+| `rocket_league` | RLCS 2024 | BallChasing.com + rrrocket | 250 replays |
+| `poker` | NLHE — Pluribus + WSOP 2023 | PHH Dataset v3 (pokerkit) | 300 games |
 
 ---
 
@@ -66,7 +66,8 @@ python run_pilot.py --output RESULTS/pilot_report.json
 ./
 ├── BUILD_PLAN.md, SPEC.md, DECISION_LOG.md, STATUS.md   # Documentation
 ├── README.md                                             # This file
-├── run_pilot.py                                          # CLI entry point
+├── run_pilot.py                                          # Pilot validation entry point
+├── run_eval.py                                           # Phase D evaluation entry point
 ├── requirements.txt
 ├── config/
 │   ├── cells.yaml          # Per-cell sample targets, stratification, env vars
@@ -74,21 +75,21 @@ python run_pilot.py --output RESULTS/pilot_report.json
 ├── src/
 │   ├── common/             # GameEvent, EventStream, ChainCandidate; config loader
 │   ├── harness/            # McNemar, scoring, variance, ACTIONABLE_TYPES, cell runner
-│   ├── interfaces/         # T (TranslationFunction) and ChainBuilder ABCs — all stubs
+│   ├── interfaces/         # TranslationFunction and ChainBuilder ABCs
 │   ├── cells/              # One subdirectory per domain: pipeline.py + extractor.py
 │   │   ├── fortnite/
 │   │   ├── nba/
 │   │   ├── csgo/
 │   │   ├── rocket_league/
-│   │   └── hearthstone/
-│   └── pilot/              # MockT + PilotValidator
+│   │   └── poker/
+│   └── pilot/              # MockT + PilotValidator + render_report
 ├── data/
 │   ├── raw/                # Per-cell raw downloads (gitignored)
 │   ├── processed/          # Per-cell parsed records (gitignored)
 │   └── events/             # Per-cell normalized GameEvent streams (gitignored)
 ├── RESULTS/                # Pilot reports, evaluation outputs (gitignored)
 ├── notebooks/              # Analysis notebooks
-└── tests/                  # pytest suite (29 tests)
+└── tests/                  # pytest suite (401 tests)
 ```
 
 ---
@@ -100,13 +101,16 @@ python run_pilot.py --output RESULTS/pilot_report.json
 - All five domain event extractors
 - Statistical harness: McNemar (continuity correction, Bonferroni, bootstrap CI), scoring, variance, cell runner
 - ACTIONABLE_TYPES whitelist (v1.1: ResourceBudget added, phase_ prefix stripped)
-- Pilot validation harness with MockT
-- Test suite: 29 tests covering harness + pilot
+- ChainBuilder: fixed per-cell chain lengths, non-overlapping windows, CF-3=A shuffle controls
+- CF-3=A leakage diagnosis: quantified leakage ratio with direction check
+- MDE and post-hoc power surfaced in all evaluation reports
+- Pilot validation harness with MockT + NoisyMockT
+- Phase D evaluation entry point (`run_eval.py`) with dry-run mode
+- Test suite: 401 tests covering harness, pilot, cells, and CLI integration
 
 ### Stubbed (Out of Scope Until SPEC Sign-Off)
 - All five Translation Functions T (raise `NotImplementedError`)
-- ChainBuilder (raises `NotImplementedError`)
-- All evaluation runs against the Haiku API
+- All evaluation runs against the real Haiku API
 
 ---
 
@@ -121,7 +125,7 @@ Before T can be implemented or evaluation runs can begin, both authors must answ
 5. CS:GO granularity (round-level vs tick-sampled vs clutch-level)
 6. NBA granularity (possession vs play-level)
 7. Rocket League state handling (hit-level vs possession vs boost-enriched)
-8. Hearthstone granularity (per-action vs per-turn)
+8. Poker granularity (per-action vs per-hand vs street-level)
 
 ---
 
