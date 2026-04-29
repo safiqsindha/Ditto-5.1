@@ -1,3 +1,11 @@
+[project]
+name = "ditto-v5"
+version = "0.1.0"
+# Python 3.11+ required: pokerkit (canonical PHH parser used by D-37 poker
+# corpus), tomllib in stdlib, and several test files use 3.10+ syntax.
+# Python 3.9 reached end-of-life in October 2025.
+requires-python = ">=3.11"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = [
@@ -28,7 +36,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [

@@ -101,28 +101,22 @@ class TestNBAExtractor:
         assert len(stream.events) < 10  # Less than per-play count
         assert len(stream.events) >= 3
 
-    def test_possession_event_has_terminal_msgtype(self):
+    def test_possession_event_has_terminal_action(self):
+        # NBA extractor was rewritten for PlayByPlayV3 schema (game.actions),
+        # which uses string actionType values rather than V2 EVENTMSGTYPE ints.
+        # location_context now carries "terminal_action" (string) and "n_plays".
         record = _load("nba_pbp_sample.json")
         stream = NBAExtractor().extract(record)
         for ev in stream.events:
             ctx = ev.location_context
-            assert "terminal_msgtype" in ctx
+            assert "terminal_action" in ctx
             assert "n_plays" in ctx
 
-    def test_no_resultsets_returns_empty(self):
-        stream = NBAExtractor().extract({"parameters": {"GameID": "test"}})
+    def test_no_actions_returns_empty(self):
+        # V3 records nest play-by-play under {"game": {"actions": [...]}}.
+        # An empty/missing game.actions yields an empty stream.
+        stream = NBAExtractor().extract({"meta": {}, "game": {"gameId": "test"}})
         assert len(stream) == 0
-
-    def test_legacy_play_level_parser_still_works(self):
-        """_parse_row reserved for ME-3 micro-experiment."""
-        record = _load("nba_pbp_sample.json")
-        ext = NBAExtractor()
-        rs = record["resultSets"][0]
-        col_idx = {col: i for i, col in enumerate(rs["headers"])}
-        row = rs["rowSet"][2]  # Player B 2-pt jump shot
-        ev = ext._parse_row(row, col_idx, "test_game", 0)
-        assert ev is not None
-        assert ev.event_type == "engage_decision"  # made shot
 
 
 # ---------------------------------------------------------------------------

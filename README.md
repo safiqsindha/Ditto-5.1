@@ -29,7 +29,7 @@ Five-cell parallel replication of v3's constraint-chain detection methodology ac
 ## Quickstart
 
 ```bash
-# Install dependencies (Python 3.9+)
+# Install dependencies (Python 3.11+)
 pip install -r requirements.txt
 
 # Copy and fill in your API keys

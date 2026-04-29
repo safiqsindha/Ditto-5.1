@@ -24,7 +24,10 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from ...interfaces.translation import TranslationFunction
+# Import the ABC from a leaf module to avoid circular import — translation.py
+# imports PokerT from this module to populate DOMAIN_T_STUBS, so we can't go
+# back the other way through translation.py.
+from ...interfaces.translation_base import TranslationFunction
 from ...common.schema import ChainCandidate, EventStream, GameEvent
 
 _POKER_N = 8               # P-3 locked

@@ -1,27 +1,113 @@
 {
-  "parameters": {"GameID": "0022300100"},
-  "resultSets": [
-    {
-      "name": "PlayByPlay",
-      "headers": [
-        "GAME_ID", "EVENTNUM", "EVENTMSGTYPE", "EVENTMSGACTIONTYPE",
-        "PERIOD", "WCTIMESTRING", "PCTIMESTRING",
-        "HOMEDESCRIPTION", "NEUTRALDESCRIPTION", "VISITORDESCRIPTION",
-        "SCORE", "SCOREMARGIN",
-        "PERSON1TYPE", "PLAYER1_ID", "PLAYER1_NAME", "PLAYER1_TEAM_ID"
-      ],
-      "rowSet": [
-        ["0022300100", 2, 12, 0, 1, "7:30 PM", "12:00", "Start Period 1", "", "", "0 - 0", "0", 0, "0", "", "0"],
-        ["0022300100", 4, 10, 0, 1, "7:30 PM", "12:00", "Tip-off", "", "", "", "", 4, "1234", "Player A", "1610612737"],
-        ["0022300100", 7, 1, 1, 1, "7:30 PM", "11:32", "", "", "Player B 2-pt jump shot", "0 - 2", "-2", 4, "5678", "Player B", "1610612738"],
-        ["0022300100", 9, 4, 0, 1, "7:30 PM", "11:25", "Player A defensive rebound", "", "", "0 - 2", "-2", 4, "1234", "Player A", "1610612737"],
-        ["0022300100", 12, 2, 1, 1, "7:30 PM", "11:00", "Player A missed jump shot", "", "", "0 - 2", "-2", 4, "1234", "Player A", "1610612737"],
-        ["0022300100", 14, 4, 0, 1, "7:30 PM", "10:58", "", "", "Player B defensive rebound", "0 - 2", "-2", 4, "5678", "Player B", "1610612738"],
-        ["0022300100", 16, 1, 0, 1, "7:30 PM", "10:30", "", "", "Player B 2-pt layup", "0 - 4", "-4", 4, "5678", "Player B", "1610612738"],
-        ["0022300100", 19, 5, 0, 1, "7:30 PM", "10:10", "Player A bad pass turnover", "", "", "0 - 4", "-4", 4, "1234", "Player A", "1610612737"],
-        ["0022300100", 22, 6, 0, 1, "7:30 PM", "10:00", "", "", "Player B personal foul", "0 - 4", "-4", 4, "5678", "Player B", "1610612738"],
-        ["0022300100", 25, 13, 0, 1, "7:30 PM", "0:00", "End Period 1", "", "", "0 - 4", "-4", 0, "0", "", "0"]
-      ]
-    }
-  ]
+  "meta": {
+    "version": 1,
+    "request": "https://stats.nba.com/stats/playbyplayv3?GameID=0022300100",
+    "time": "2026-04-28T00:00:00Z"
+  },
+  "game": {
+    "gameId": "0022300100",
+    "videoAvailable": 1,
+    "actions": [
+      {
+        "actionNumber": 2,  "clock": "PT12M00.00S", "period": 1,
+        "teamId": 0, "teamTricode": "", "personId": 0,
+        "playerName": "", "playerNameI": "",
+        "xLegacy": 0, "yLegacy": 0, "shotDistance": 0, "shotResult": "",
+        "isFieldGoal": 0, "scoreHome": "0", "scoreAway": "0", "pointsTotal": 0,
+        "location": "", "description": "Start of 1st Period",
+        "actionType": "period", "subType": "start",
+        "videoAvailable": 0, "shotValue": 0, "actionId": 1
+      },
+      {
+        "actionNumber": 4, "clock": "PT12M00.00S", "period": 1,
+        "teamId": 1610612737, "teamTricode": "ATL", "personId": 1234,
+        "playerName": "Player A", "playerNameI": "P. A",
+        "xLegacy": 0, "yLegacy": 0, "shotDistance": 0, "shotResult": "",
+        "isFieldGoal": 0, "scoreHome": "0", "scoreAway": "0", "pointsTotal": 0,
+        "location": "h", "description": "Tip-off",
+        "actionType": "Jump Ball", "subType": "",
+        "videoAvailable": 1, "shotValue": 0, "actionId": 2
+      },
+      {
+        "actionNumber": 7, "clock": "PT11M32.00S", "period": 1,
+        "teamId": 1610612738, "teamTricode": "BOS", "personId": 5678,
+        "playerName": "Player B", "playerNameI": "P. B",
+        "xLegacy": 50, "yLegacy": 100, "shotDistance": 18, "shotResult": "Made",
+        "isFieldGoal": 1, "scoreHome": "0", "scoreAway": "2", "pointsTotal": 2,
+        "location": "v", "description": "Player B 2-pt jump shot",
+        "actionType": "Made Shot", "subType": "Jump Shot",
+        "videoAvailable": 1, "shotValue": 2, "actionId": 3
+      },
+      {
+        "actionNumber": 9, "clock": "PT11M25.00S", "period": 1,
+        "teamId": 1610612737, "teamTricode": "ATL", "personId": 1234,
+        "playerName": "Player A", "playerNameI": "P. A",
+        "xLegacy": 0, "yLegacy": 0, "shotDistance": 0, "shotResult": "",
+        "isFieldGoal": 0, "scoreHome": "0", "scoreAway": "2", "pointsTotal": 0,
+        "location": "h", "description": "Player A defensive rebound",
+        "actionType": "Rebound", "subType": "defensive",
+        "videoAvailable": 1, "shotValue": 0, "actionId": 4
+      },
+      {
+        "actionNumber": 12, "clock": "PT11M00.00S", "period": 1,
+        "teamId": 1610612737, "teamTricode": "ATL", "personId": 1234,
+        "playerName": "Player A", "playerNameI": "P. A",
+        "xLegacy": 30, "yLegacy": 80, "shotDistance": 12, "shotResult": "Missed",
+        "isFieldGoal": 1, "scoreHome": "0", "scoreAway": "2", "pointsTotal": 0,
+        "location": "h", "description": "Player A missed jump shot",
+        "actionType": "Missed Shot", "subType": "Jump Shot",
+        "videoAvailable": 1, "shotValue": 2, "actionId": 5
+      },
+      {
+        "actionNumber": 14, "clock": "PT10M58.00S", "period": 1,
+        "teamId": 1610612738, "teamTricode": "BOS", "personId": 5678,
+        "playerName": "Player B", "playerNameI": "P. B",
+        "xLegacy": 0, "yLegacy": 0, "shotDistance": 0, "shotResult": "",
+        "isFieldGoal": 0, "scoreHome": "0", "scoreAway": "2", "pointsTotal": 0,
+        "location": "v", "description": "Player B defensive rebound",
+        "actionType": "Rebound", "subType": "defensive",
+        "videoAvailable": 1, "shotValue": 0, "actionId": 6
+      },
+      {
+        "actionNumber": 16, "clock": "PT10M30.00S", "period": 1,
+        "teamId": 1610612738, "teamTricode": "BOS", "personId": 5678,
+        "playerName": "Player B", "playerNameI": "P. B",
+        "xLegacy": 5, "yLegacy": 5, "shotDistance": 1, "shotResult": "Made",
+        "isFieldGoal": 1, "scoreHome": "0", "scoreAway": "4", "pointsTotal": 2,
+        "location": "v", "description": "Player B 2-pt layup",
+        "actionType": "Made Shot", "subType": "Layup",
+        "videoAvailable": 1, "shotValue": 2, "actionId": 7
+      },
+      {
+        "actionNumber": 19, "clock": "PT10M10.00S", "period": 1,
+        "teamId": 1610612737, "teamTricode": "ATL", "personId": 1234,
+        "playerName": "Player A", "playerNameI": "P. A",
+        "xLegacy": 0, "yLegacy": 0, "shotDistance": 0, "shotResult": "",
+        "isFieldGoal": 0, "scoreHome": "0", "scoreAway": "4", "pointsTotal": 0,
+        "location": "h", "description": "Player A bad pass turnover",
+        "actionType": "Turnover", "subType": "Bad Pass",
+        "videoAvailable": 1, "shotValue": 0, "actionId": 8
+      },
+      {
+        "actionNumber": 22, "clock": "PT10M00.00S", "period": 1,
+        "teamId": 1610612738, "teamTricode": "BOS", "personId": 5678,
+        "playerName": "Player B", "playerNameI": "P. B",
+        "xLegacy": 0, "yLegacy": 0, "shotDistance": 0, "shotResult": "",
+        "isFieldGoal": 0, "scoreHome": "0", "scoreAway": "4", "pointsTotal": 0,
+        "location": "v", "description": "Player B personal foul",
+        "actionType": "Foul", "subType": "Personal",
+        "videoAvailable": 1, "shotValue": 0, "actionId": 9
+      },
+      {
+        "actionNumber": 25, "clock": "PT00M00.00S", "period": 1,
+        "teamId": 0, "teamTricode": "", "personId": 0,
+        "playerName": "", "playerNameI": "",
+        "xLegacy": 0, "yLegacy": 0, "shotDistance": 0, "shotResult": "",
+        "isFieldGoal": 0, "scoreHome": "0", "scoreAway": "4", "pointsTotal": 0,
+        "location": "", "description": "End of 1st Period",
+        "actionType": "period", "subType": "end",
+        "videoAvailable": 0, "shotValue": 0, "actionId": 10
+      }
+    ]
+  }
 }

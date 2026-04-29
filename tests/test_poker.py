@@ -590,12 +590,18 @@ class TestPokerPromptBuilder:
         chain = self._make_chain()
         pair = self.builder.build(chain)
         assert "Constraint Context" not in pair.baseline_prompt
-        assert "No-Limit Texas Hold" not in pair.baseline_prompt
+        # Per T-design review (2026-04-28): NLHE/Hold'em anchor stripped from
+        # the constraint block to test rule-following rather than pretrained
+        # domain recall. Baseline must also not name the variant.
+        assert "fold/check/call" not in pair.baseline_prompt
 
     def test_intervention_has_constraint_context(self):
         chain = self._make_chain()
         pair = self.builder.build(chain)
-        assert "No-Limit Texas Hold" in pair.intervention_prompt
+        # Per T-design review (2026-04-28): constraint block uses generic
+        # rule wording without naming the poker variant.
+        assert "fold/check/call/bet/raise" in pair.intervention_prompt
+        assert "showdown" in pair.intervention_prompt
 
     def test_constraint_mentions_stack(self):
         chain = self._make_chain()
