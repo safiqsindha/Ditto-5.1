@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 import random
 from abc import ABC, abstractmethod
+from dataclasses import replace as dataclasses_replace
 
 from ..common.schema import ChainCandidate, EventStream
 
@@ -210,23 +211,58 @@ class FixedPerCellChainBuilder(ChainBuilder):
         Events within each chain are randomly reordered; chain_id, game_id,
         and cell are preserved. Shuffled chains are tagged in chain_metadata
         with cf3="shuffled_control".
+
+        FORMAT-LEAK FIX (review-r4): the original implementation shuffled
+        events but kept each event's `timestamp` field bound to the event,
+        so the rendered prompt showed non-monotonic timestamps (e.g.
+        ``t=2.0 → t=0.0 → t=1.0``). That gave the model a trivial format
+        cue for detecting shuffled chains without doing any constraint
+        reasoning, inflating CF-3=A discrimination via format alone and
+        risking a spurious "format leakage suspected" advisory.
+
+        We now preserve the *position-indexed* timestamp sequence: the
+        i-th slot of the shuffled chain receives the timestamp that the
+        i-th slot held in the original chain. Event content (event_type,
+        actor, location_context, sequence_idx, raw_data_blob) is shuffled,
+        but the rendered ``t=...`` column stays monotonic, matching the
+        primary-chain format byte-for-byte. This is the correct null —
+        the only thing that varies is the *ordering of game-content events*.
         """
         rng = random.Random(seed)
         shuffled: list[ChainCandidate] = []
         for chain in chains:
             for k in range(n_shuffles):
-                events = list(chain.events)
-                rng.shuffle(events)
+                # Capture original timestamps in position order before shuffle.
+                original_timestamps = [ev.timestamp for ev in chain.events]
+                # Make a shuffled copy of the event list.
+                indices = list(range(len(chain.events)))
+                rng.shuffle(indices)
+                # Rebuild events: i-th slot gets the shuffled-source event
+                # but the i-th original-position timestamp. We reuse the
+                # GameEvent dataclass with the original-slot timestamp so
+                # downstream consumers (prompt rendering) see a monotonic
+                # time column identical in shape to a real chain.
+                rebuilt = []
+                for new_idx, src_idx in enumerate(indices):
+                    src_ev = chain.events[src_idx]
+                    # dataclasses.replace preserves all other fields and is
+                    # safer than constructing GameEvent positionally if the
+                    # schema gains fields later.
+                    rebuilt.append(dataclasses_replace(
+                        src_ev,
+                        timestamp=original_timestamps[new_idx],
+                    ))
                 shuffled.append(ChainCandidate(
                     chain_id=f"{chain.chain_id}_shuf{k:02d}",
                     game_id=chain.game_id,
                     cell=chain.cell,
-                    events=events,
+                    events=rebuilt,
                     chain_metadata={
                         **chain.chain_metadata,
                         "parent_chain_id": chain.chain_id,
                         "shuffled": True,
                         "shuffle_idx": k,
+                        "shuffle_permutation": indices,
                         "cf3": "shuffled_control",
                     },
                 ))

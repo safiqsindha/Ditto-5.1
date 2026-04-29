@@ -210,6 +210,44 @@ class TestShuffleChains:
         for a, b in zip(s1, s2, strict=False):
             assert [e.sequence_idx for e in a.events] == [e.sequence_idx for e in b.events]
 
+    def test_timestamps_remain_monotonic_after_shuffle(self):
+        """Review-r4 fix: rendered ``t=`` column must be monotonic so the
+        shuffled-control chain is format-indistinguishable from a primary
+        chain. Otherwise the model can detect shuffling via non-monotonic
+        timestamps, inflating the CF-3=A null via format leakage alone."""
+        builder = FixedPerCellChainBuilder({"nba": 8})
+        chains = self._make_chains(n=3, chain_len=8)
+        shuffled = builder.shuffle_chains(chains, seed=123)
+        for s in shuffled:
+            ts = [ev.timestamp for ev in s.events]
+            assert ts == sorted(ts), (
+                f"shuffled chain {s.chain_id} has non-monotonic timestamps "
+                f"{ts} — would leak shuffle status as a format cue"
+            )
+
+    def test_shuffle_preserves_original_position_timestamps(self):
+        """Position-i timestamp in the shuffled chain should equal
+        position-i timestamp in the original chain."""
+        builder = FixedPerCellChainBuilder({"nba": 8})
+        chains = self._make_chains(n=2, chain_len=8)
+        shuffled = builder.shuffle_chains(chains, seed=7)
+        for orig, shuf in zip(chains, shuffled, strict=True):
+            orig_ts = [ev.timestamp for ev in orig.events]
+            shuf_ts = [ev.timestamp for ev in shuf.events]
+            assert orig_ts == shuf_ts
+
+    def test_shuffle_actually_reorders_event_content(self):
+        """Sanity: the event-content order (by sequence_idx) does change."""
+        builder = FixedPerCellChainBuilder({"nba": 8})
+        chains = self._make_chains(n=1, chain_len=12)
+        shuffled = builder.shuffle_chains(chains, seed=3)
+        orig_seq = [e.sequence_idx for e in chains[0].events]
+        shuf_seq = [e.sequence_idx for e in shuffled[0].events]
+        # Same multiset, different order (extremely unlikely to be identical
+        # for n=12 with seed=3)
+        assert sorted(orig_seq) == sorted(shuf_seq)
+        assert orig_seq != shuf_seq
+
 
 def test_uniform_subsample():
     items = list(range(100))
