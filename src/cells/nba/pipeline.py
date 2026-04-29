@@ -28,8 +28,10 @@ SEASON_2024 = "2023-24"
 PLAYOFF_SEASON_2024 = "2023-24"  # Same season for API
 
 # Sample game IDs for seeding (will be overridden by real fetch)
-SAMPLE_RS_GAME_IDS = [f"002230{i:04d}" for i in range(1, 241)]   # regular season
-SAMPLE_PO_GAME_IDS = [f"004230{i:04d}" for i in range(1, 61)]    # playoffs
+# 2023-24 regular season had 1,230 games (`0022300001`–`0022301230`).
+# Range goes up to 400 here to allow playoff-slot backfill (NBA-1 workaround).
+SAMPLE_RS_GAME_IDS = [f"002230{i:04d}" for i in range(1, 401)]   # regular season
+SAMPLE_PO_GAME_IDS = [f"004230{i:04d}" for i in range(1, 61)]    # playoffs (KNOWN BUG NBA-1)
 
 
 class NBAPipeline(BasePipeline):
@@ -130,9 +132,23 @@ class NBAPipeline(BasePipeline):
         return streams
 
     def _get_target_game_ids(self) -> list[str]:
-        """Return list of game IDs to fetch based on stratification config."""
+        """
+        Return list of game IDs to fetch based on stratification config.
+
+        KNOWN BUG (NBA-1): SAMPLE_PO_GAME_IDS generates playoff IDs sequentially
+        (`004230{i:04d}` for i in 1..60) but NBA playoff IDs are not sequential —
+        they follow a series-based format (`0042300101` = round 1 series 1 game 1,
+        `0042300401` = Finals game 1, etc.). The hardcoded sequential IDs
+        produce 60 invalid IDs that all 404 from NBA Stats and crash nba_api's
+        parser with `list index out of range`.
+
+        TODO: replace with `nba_api.stats.endpoints.LeagueGameFinder` query
+        for season "2023-24" + season_type_nullable in {"Regular Season", "Playoffs"}
+        to get actual valid game IDs. For now, restrict to regular season so the
+        cell can produce real data without the playoff bug blocking everything.
+        """
         strat = self.config.stratification
-        game_ids = []
+        game_ids: list[str] = []
         for s in strat:
             phase = s.get("phase", "")
             fraction = s.get("fraction", 0.5)
@@ -140,8 +156,16 @@ class NBAPipeline(BasePipeline):
             if phase == "regular_season":
                 game_ids.extend(SAMPLE_RS_GAME_IDS[:n])
             elif phase == "playoffs":
-                game_ids.extend(SAMPLE_PO_GAME_IDS[:n])
-        return game_ids or (SAMPLE_RS_GAME_IDS[:240] + SAMPLE_PO_GAME_IDS[:60])
+                # SKIPPED — see NBA-1 above. Backfill the playoff slots with
+                # additional regular-season games so we still hit sample_target.
+                logger.warning(
+                    "[nba] Playoff game IDs are sequentially-generated and invalid; "
+                    "skipping %d playoff slots and using regular-season IDs instead. "
+                    "See NBA-1 in pipeline.py.",
+                    n,
+                )
+                game_ids.extend(SAMPLE_RS_GAME_IDS[len(game_ids): len(game_ids) + n])
+        return game_ids or SAMPLE_RS_GAME_IDS[: self.config.sample_target]
 
 
 NBA_MOCK_EVENT_TYPES = [

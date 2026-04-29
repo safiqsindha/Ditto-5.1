@@ -4,7 +4,7 @@
 
 harness:
   version: "1.1"
-  cells: ["fortnite", "nba", "csgo", "rocket_league", "poker"]
+  cells: ["pubg", "nba", "csgo", "rocket_league", "poker"]
 
   mcnemar:
     alpha: 0.05
@@ -35,7 +35,7 @@ harness:
   chain_length:  # Q4 LOCKED + Phase B LOCKED 2026-04-27 (both authors)
     mode: "fixed_per_cell"
     per_cell:
-      fortnite: 8         # F-3 locked: storm-rotation window (~600 tokens)
+      pubg: 8             # P-3 provisional: zone-rotation window (mirrors Fortnite F-3 — same battle-royale decision unit)
       nba: 5              # N-3 locked: one full possession + lead-in
       csgo: 10            # C-3 locked: one full round at round-level granularity
       rocket_league: 12   # R-3 locked: one play (6-8 hits + 4-6 boost events)

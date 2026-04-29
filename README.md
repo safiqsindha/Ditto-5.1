@@ -13,11 +13,16 @@ Five-cell parallel replication of v3's constraint-chain detection methodology ac
 
 | Cell | Domain | Data Source | Sample Target |
 |------|---------|-------------|---------------|
-| `fortnite` | FNCS / Cash Cup 2024 | Epic CDN replays + FortniteReplayDecompressor | 200 matches |
+| `pubg` | PUBG sample matches (squad-fpp / solo-fpp) | PUBG Developer API (telemetry) | 25 matches (smoke), scaling to 80+ for full corpus |
 | `nba` | 2023-24 season | NBA Stats API (PlayByPlayV3) | 300 games |
 | `csgo` | 2024 S-tier (CS2) | HLTV demo archive + awpy | 150 maps |
 | `rocket_league` | RLCS 2024 | BallChasing.com + rrrocket | 250 replays |
-| `poker` | NLHE — Pluribus + WSOP 2023 | PHH Dataset v3 (pokerkit) | 300 games |
+| `poker` | NLHE — HandHQ + WSOP 2023 (all-human) | PHH Dataset v3 (tomli) | 3,500 hands |
+
+**SPEC v1.1 amendments** ([SPEC.md](SPEC.md)):
+- **A1** (pre-current session): Hearthstone → Poker — HSReplay friction; PHH Dataset v3 is open
+- **A2** (2026-04-28): Fortnite → PUBG — Epic CDN locked down public chunk access; PUBG offers a documented public API ([D-35](DECISION_LOG.md), [D-36](DECISION_LOG.md))
+- **A3** (2026-04-28): Poker corpus Pluribus → HandHQ — Pluribus hands include Facebook's superhuman bot in one of 6 seats, contaminating ~17% of actions; switched to HandHQ (anonymized human cash games) + WSOP 2023 ([D-37](DECISION_LOG.md))
 
 ---
 
@@ -77,7 +82,8 @@ python run_pilot.py --output RESULTS/pilot_report.json
 │   ├── harness/            # McNemar, scoring, variance, ACTIONABLE_TYPES, cell runner
 │   ├── interfaces/         # TranslationFunction and ChainBuilder ABCs
 │   ├── cells/              # One subdirectory per domain: pipeline.py + extractor.py
-│   │   ├── fortnite/
+│   │   ├── pubg/           # active battle-royale cell (replaces fortnite per A2)
+│   │   ├── fortnite/       # legacy — kept for tests; not in active configs
 │   │   ├── nba/
 │   │   ├── csgo/
 │   │   ├── rocket_league/

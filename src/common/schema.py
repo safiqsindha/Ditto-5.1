@@ -12,7 +12,7 @@ from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-VALID_CELLS = frozenset(["fortnite", "nba", "csgo", "rocket_league", "poker"])
+VALID_CELLS = frozenset(["fortnite", "nba", "csgo", "rocket_league", "poker", "pubg"])
 
 
 @dataclass

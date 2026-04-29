@@ -1,10 +1,38 @@
 # v5 Experiment Specification
 
 **Status:** ✅ FULLY PRE-REGISTERED (both-author sign-off complete, 2026-04-27)  
-**Version:** 1.0 (signed)  
+**Version:** 1.1 (post-acquisition amendments)  
 **Authors:** Lead Author + Myriam (both signatures recorded 2026-04-27)  
 **Subject model:** Claude Haiku (claude-haiku-4-5-20251001)  
 **Reference experiments:** v3 (Chess/Checkers), v4 (single-cell methodology characterization)
+
+---
+
+## ⚠ Amendments Log
+
+Three amendments have been adopted after SPEC v1.0 sign-off due to data-acquisition
+constraints that emerged during real-data integration. Methodology
+(Q1–Q4 + statistical design) is **unchanged**; only data-source identity and
+upstream sample sizes shifted. **All amendments signed off by both authors
+(Lead Author + Myriam) as of 2026-04-28.** See [DECISION_LOG.md](DECISION_LOG.md)
+for full framing.
+
+| Amendment | Original cell | Replaced with | Reason | Sign-off | DECISION_LOG ref |
+|-----------|---------------|---------------|--------|----------|------------------|
+| **A1** (pre-current session) | Hearthstone | **Poker** (NLHE, PHH Dataset v3) | HSReplay API friction; PHH Dataset is open and methodologically equivalent for the card-game decision class | ✅ both authors, 2026-04-27 | (reflected in code & cells.yaml) |
+| **A2** (2026-04-28) | Fortnite | **PUBG** (Krafton developer API) | Epic CDN locked down public chunk-data access in 2025–2026; PUBG provides documented public API with no rate limit on /matches and telemetry | ✅ both authors, 2026-04-28 | D-35 (PUBG swap), D-36 (PUBG bot filter) |
+| **A3** (2026-04-28) | Poker corpus: Pluribus + WSOP 2023 | **Poker corpus: HandHQ (200NL–1000NL stratified) + WSOP 2023, all human** | Pluribus hands include Facebook's superhuman bot in 1 of 6 seats, contaminating ~17% of actions and biasing chains toward non-human strategy. Switched to HandHQ (anonymized human cash games) filtered to 200NL–1000NL for GTO-aware play, plus WSOP 2023 final-table. Sample target raised 300 → 3,500 to account for ~7.5 events/hand | ✅ both authors, 2026-04-28 | D-37 (corpus swap + stakes filter clarification) |
+
+**Methodology preserved across all amendments:**
+- Sample target: 1,200 chains/cell (Q3) — unchanged
+- Bonferroni divisor = 5 (Q2) — unchanged (still 5 cells)
+- Chain length per cell (Q4) — PUBG inherits Fortnite's 8 (zone-rotation window); Poker locked at 8
+- Constraint type: PUBG = zone boundary + elimination causality (mirrors original Fortnite F-1); Poker = action-on-street (per Q8-A)
+- A3 changes the *upstream sample size* (300→3,500 hands) but does not alter the per-cell chain target, the per-event normalization, the chain construction, or the McNemar harness. The change is a corpus-purity correction, not a design change.
+
+The text below references the original cells in places (Fortnite, Hearthstone)
+to preserve the historical signed record. Active configs are authoritative
+([config/cells.yaml](config/cells.yaml), [config/harness.yaml](config/harness.yaml)).
 
 **Sign-off status:** ✅ ALL EIGHT QUESTIONS LOCKED
 - Q1: ✅ LOCKED — (B) two separate API calls per chain

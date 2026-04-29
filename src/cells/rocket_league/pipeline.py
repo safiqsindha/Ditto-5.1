@@ -111,7 +111,7 @@ class RocketLeaguePipeline(BasePipeline):
         url = f"{BALLCHASING_API}/replays"
         params: dict | None = {
             "playlist": "ranked-standard",
-            "min-rank": "diamond-i",
+            "min-rank": "diamond-1",
             "count": 200,
             "sort-by": "replay-date",
             "sort-dir": "desc",

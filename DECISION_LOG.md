@@ -633,3 +633,148 @@ Pilot run confirmed 7,740–18,420 chains per cell (all well above 1,200 target)
 **Implementation:** `PromptBuilder.format_chain()` builds the `actor_map` dict and passes it to `format_event(actor_map=...)`. A module-level `_build_actor_map()` helper keeps the logic reusable. Location context (x/y coordinates, round numbers, period numbers) is retained — those are structural game state, not player identity.
 
 **Code impact:** `v5/src/harness/prompts.py` — `format_chain`, `format_event`, `_build_actor_map` updated. Two tests added to `test_prompts.py` verifying absence of real names and presence of anonymised slots.
+
+---
+
+## Decision D-35: Battle-royale cell pivot — Fortnite → PUBG
+
+**Date:** 2026-04-28 (post-acquisition integration session)
+
+**Context:** During real-data integration of the Fortnite cell, repeated end-to-end testing surfaced a hard blocker: Epic Games' CDN now returns HTTP 403 (`AccessDenied`) on event-chunk reads, even when:
+- Match metadata is fully reachable (~14-day retention),
+- The metadata returns `Events` arrays of 200+ chunks per match,
+- Chunk-access listings respond 200 with valid `readLink` presigned URLs,
+- The presigned URL is fetched within its expiry window via every plausible HTTP-client variant (`requests` default UA, browser UA, `urllib.request`, manually-preserved-URL prepared request).
+
+The presigned URL itself is rejected by CloudFront with `AccessDenied` and `"size": 0` in the file metadata — strongly indicating Epic has redacted public chunk storage while keeping metadata stubs. This appears to be a 2025–2026 lockdown by Epic; older third-party tooling (xNocken/replay-downloader, yuyutti/Fortnite_ServerReplay_Downloader) faced similar issues. **The original Fortnite pipeline shipped broken from the initial commit and was never validated end-to-end against real data** (a `body.get("url", "")` bug at `_download_chunk` would have masked the underlying access bug regardless).
+
+**Question:** Replace Fortnite as the v5 battle-royale cell, or accept Fortnite as a permanent mock-only cell?
+
+**Decision:** **Replace Fortnite with PUBG (Krafton developer API).** Methodologically the cells are interchangeable — both are battle royale, with spatial movement + elimination causality + shrinking-zone temporal constraint as the constraint structure. The v3-generalization research question ("does the methodology work for battle-royale decision structures?") is unchanged.
+
+**Pre-existing decisions superseded:**
+- **D-15** (burner Epic account + proxy/rate-limiter for Fortnite) — superseded; no Epic credentials required for PUBG
+- **D-28** (Phase B Fortnite F-1 through F-6 T design) — superseded by parallel PUBG decisions below
+
+**Reasoning:**
+- PUBG developer API is documented, free, stable. /matches and telemetry endpoints are explicitly **not rate-limited** per Krafton's docs.
+- Telemetry is documented JSON (gzipped), 28k–48k events per match, full spatial coordinates preserved.
+- 737 sample matches readily available; tournament data accessible via player-name discovery for production corpus.
+- Smoke test confirmed end-to-end at 25 matches → 86,251 actionable events → 5,391 chains projected at 50% Gate-2 floor (4.5× the 1,200 SPEC target).
+
+**Parallel Phase B decisions — supersede D-28 F-1 through F-6:**
+
+- **P-1 (Constraint):** Zone (blue zone) boundary + elimination causality. Mirrors F-1's "storm boundary + elimination causality." Build-cost rule from F-1 is dropped (PUBG has no building); item/inventory pressure noted as future v6 study target.
+- **P-2 (Chain content):** Zone-phase rotation window — events within one safety-zone-radius transition. Mirrors F-2.
+- **P-3 (Chain length N):** **8** — matches F-3 (battle-royale decision unit holds across both games). Locked in `config/harness.yaml`.
+- **P-4 (Prediction target):** Binary classify (follows CF-2). Unchanged from F-4.
+- **P-5 (Constraint context language):** "In PUBG, players must remain inside the safety zone — players outside take damage over time. An eliminated player cannot generate further actions. Items are limited to inventory capacity." (PromptBuilder.format_constraint_context for PUBG.)
+- **P-6 (Actionable type overrides):** None for v5 Phase 1 — the existing `ACTIONABLE_TYPES` whitelist (engage_decision, position_commit, zone_enter/exit, resource_gain/spend, risk_accept) covers the PUBG event taxonomy without overrides. F-6's storm_rotation/build_decision overrides are not carried forward.
+
+**Alternatives considered:**
+- Stay with Fortnite + mock data permanently: drops a real-data cell from the experiment, losing the spatial-telemetry battle-royale test condition.
+- User-token Epic OAuth (via burner account / device-auth flow): high effort (~4–8 hrs); unknown whether it would unlock chunk access; brittle if Epic continues hostile lockdown.
+- Switch to TRN aggregated stats: drops spatial telemetry — methodologically asymmetric vs other cells.
+
+**Code impact:**
+- New cell directory: `src/cells/pubg/{__init__.py, pipeline.py, extractor.py}`
+- `src/common/schema.py` — added `"pubg"` to `VALID_CELLS` (kept `"fortnite"` for legacy test compat)
+- `config/cells.yaml` — replaced `fortnite` block with `pubg` block (sample_target=25 for smoke test phase, scale to 80+ for full corpus run)
+- `config/harness.yaml` — replaced `fortnite` with `pubg` in cells list and chain_length per_cell
+- Helper scripts: `scripts/pubg_smoke_probe.py`, `scripts/pubg_pipeline_smoke_test.py`
+- Fortnite pipeline retained as orphaned dead code (not in active configs); can be removed in a v5.1 cleanup pass
+
+**Reversibility:** Moderate. Fortnite cell code is still present and could be re-enabled by reverting cells.yaml/harness.yaml if Epic re-opens chunk access. PUBG cell would coexist as a sixth cell or be removed.
+
+**Needs review before SPEC sign-off:** Methodologically minimal change (battle-royale cell stays a battle-royale cell). Amendment A2 documented in SPEC.md.
+
+---
+
+## Decision D-36: PUBG bot filter — exclude `user_ai` actor events
+
+**Date:** 2026-04-28
+
+**Context:** PUBG's `/samples` endpoint returns rolling public matches that include AI bots alongside human players. Each player object in telemetry events carries a `type` field (`"user"` for humans, `"user_ai"` for bots, `"npc"` for special-mode NPCs). Tournament-tier matches do not contain bots, but for smoke-test discovery and any non-tournament corpus, bot events would pollute the chain decision space — bots make mechanically uniform decisions that don't represent strategic agent reasoning.
+
+**Question:** Filter bot events at extraction time, or accept bot contamination?
+
+**Decision:** Filter at extraction time in `PUBGExtractor`. Skip any event whose **actor** (the player whose decision the GameEvent attributes) has `type != "user"`. Specifically:
+- Kill events (actor = killer): skip if killer is non-human.
+- Knock events (actor = attacker): skip if attacker is non-human.
+- Damage events (actor = victim): skip if victim is non-human.
+- Landing / vehicle / item events (actor = character): skip if character is non-human.
+- Zone events have no player actor (actor = `"zone"`) — never filtered.
+
+**Reasoning:** Filtering at extraction is preferable to filtering at chain-construction time because (a) the event-type filtering already happens here, (b) filtered events shouldn't appear in any downstream artifact, (c) the actor-attribution rule is well-defined per event type. The rule "attribute the decision to the actor; require actor to be human" is methodologically clean — a human killing a bot is a human decision (kept), but a bot's positioning is not (dropped).
+
+**Alternatives considered:**
+- Filter at chain-construction time: harder to reason about retention rates; bot events would consume chain budget before being filtered.
+- Filter at the discovery layer (only fetch tournament matches): correct long-term, but requires player-name curation. Extraction filter is the safer baseline that keeps both `/samples` and tournament-discovery paths clean.
+- No filter (accept bot contamination): unacceptable — bots have qualitatively different decision distributions and would bias chain quality.
+
+**Code impact:** `src/cells/pubg/extractor.py` — added `_is_human()` helper; each per-event constructor now early-returns `None` when the actor's player object has `type != "user"`.
+
+**Reversibility:** Easy — single helper function gates all filters.
+
+---
+
+## Decision D-37: Poker corpus swap — drop Pluribus, use HandHQ + WSOP 2023
+
+**Date:** 2026-04-28
+
+**Context:** The PHH Dataset v3 ships three NLHE subsets: Pluribus (Brown & Sandholm 2019, 10,000 hands), the WSOP 2023 $50K Players Championship final-table (83 hands), and HandHQ (21.6M anonymized human cash-game hands from July 2009, stakes 25NL–1000NL). The original v5 plan used Pluribus + WSOP because they were both small, named, and easy to ingest.
+
+After the smoke test passed end-to-end on Pluribus, we re-examined the data: every Pluribus hand has Facebook's superhuman bot occupying one of the 6 seats. The bot's actions average ~17% of all player decisions in the corpus and are systematically distinct from human play (the entire point of the Brown & Sandholm paper was that Pluribus beats elite human pros). Including Pluribus's events would bias chain detection toward decision patterns that fall *outside* the human population the v5 experiment is meant to characterize — the same methodological hazard the PUBG bot filter (D-36) addresses, but more severe because Pluribus is *stronger* than humans, not weaker.
+
+**Question:** Keep Pluribus and either (a) leave the bot's events in, (b) filter the bot's events at extraction time, or (c) drop Pluribus entirely and use a fully human corpus?
+
+**Decision:** Drop Pluribus. Use HandHQ (filtered to 6-handed hands at parse time, all stakes) plus the 83 WSOP 2023 $50K final-table hands. Sample target raised from 300 → 3,500 hands to compensate for the lower per-hand event count of cash-game NLHE (~7.5 events/hand of player decisions vs. the ~24 the original mock generator assumed).
+
+**Reasoning:**
+- (a) leaving the bot in is methodologically unacceptable; the bot's strategy is by definition outside the human distribution.
+- (b) filtering only the bot's events at extraction would still leave the human players' decisions distorted by playing against a superhuman opponent — humans adjust their strategy to the table. We can't recover the counterfactual "what would these humans do at a 6-human table" from Pluribus data.
+- (c) HandHQ is already on disk (extracted from the same v3 tarball), is fully anonymized via OBFU base64 hashes, has 6.5M+ 6-handed hands available across 25NL–1000NL stakes, and the players are by construction unaware they're being recorded. WSOP 2023 final-table is small but premium (elite human pros) and already supported by the existing extractor with name anonymization (CF-4=B).
+
+**Sample size justification:** At observed 7.5 events/hand and chain_length=8 with 50% Gate-2 retention, n=3,500 hands yields ~1,631 chains — 1.36× the 1,200-chain target. This is tighter headroom than other cells (NBA 4.5×, RL 5.1×, CS:GO 2.3×, PUBG 4.2×) but sufficient. If post-T retention proves materially worse than 50%, sample_target can be raised to ~5,000 without exhausting the supply.
+
+**Alternatives considered:**
+- Keep Pluribus, accept bias: rejected (see Reasoning).
+- Filter Pluribus's events only: rejected (still distorts remaining humans).
+- Use HandHQ alone (drop WSOP too): considered. WSOP is small (83 hands) and adds a different stake regime (tournament cash vs. cash-game cash), but it preserves the "elite human play" sub-stratum that some of the original v5 motivation pointed at. Kept.
+- Use a different all-human dataset (IRC poker database; PokerBench): IRC is pre-GTO era and stylistically different from modern play; PokerBench is curated scenarios rather than raw hand histories. HandHQ is the cleanest fit.
+
+**Code impact:**
+- `src/cells/poker/pipeline.py`:
+  - `_PHH_SUBSETS` = `["wsop/2023", "handhq"]` (was `["pluribus", "wsop-2023-50k"]`).
+  - Added `.phhs` (multi-hand TOML stream) parser via `_iter_records_from_path`; each `[N]` sub-table is a separate hand.
+  - HandHQ filtered to `_HANDHQ_TARGET_SEATS = 6` at parse time.
+  - WSOP processed first so its 83 hands are always included regardless of sample_target.
+  - Replaced pokerkit dependency with `tomli`/`tomllib` (pokerkit requires Python ≥3.11; this repo runs on 3.9).
+- `config/cells.yaml`: poker sample_target_games 300 → 3500; stratification updated; display_name and time_range updated.
+- `src/cells/poker/extractor.py`: unchanged. Existing CF-4=B anonymization continues to handle WSOP real names; HandHQ names are already obfuscated and pass through the actor_map untouched.
+
+**Reversibility:** Easy at the corpus level — `_PHH_SUBSETS` is a one-line change, and the Pluribus files remain on disk. Decision is harder to *un-make* once results are computed: the methodological argument for excluding bot data is strong enough that re-introducing Pluribus would itself need a new decision entry.
+
+---
+
+## D-37 clarification (2026-04-28): HandHQ stakes filter — 200NL–1000NL stratified
+
+**Trigger:** Post-implementation review revealed the lex-sorted file walk was pulling 97.6% of the HandHQ sample from 1000NL alone (because `1000NLH` sorts before `100NLH` lexically and the parse loop hit the sample target before advancing to other brackets).
+
+**Decision:** Add an explicit stakes filter at parse time:
+- Allowed brackets: `{200NLH, 400NLH, 600NLH, 1000NLH}` (excludes 25NL, 50NL, 100NL).
+- Per-bracket budget: `(sample_target - 83) / 4 ≈ 854` hands per bracket.
+- Within each bracket, files are still consumed in lex order; stratification is at the bracket level only.
+
+**Reasoning:** Mid/high-stakes cash games (200NL+) are the conventional cutoff for "GTO-aware" play in modern poker training data. Lower brackets reflect highly exploitative recreational play whose decision distribution is structurally distinct from the strategic-human population the experiment is meant to characterise — same rationale as dropping Pluribus, applied at a different layer. Spreading evenly across four brackets averages out any per-population quirk of a single stake (e.g., 1000NL's rake-back-grinder skew, or 200NL's tighter-aggressive baseline).
+
+**Code impact:** `src/cells/poker/pipeline.py`:
+- New constants `_HANDHQ_ALLOWED_STAKES = frozenset({"200", "400", "600", "1000"})` and `_HANDHQ_STAKE_RE`.
+- `_iter_records_from_path` early-returns for HandHQ files outside the allowed set.
+- `parse()` allocates per-bracket budgets and skips files whose bracket is exhausted.
+
+**Reversibility:** Trivial — flip `_HANDHQ_ALLOWED_STAKES` to include all brackets to revert.
+
+**Verified distribution (sample_target=3500):** 854/854/854/854 across 1000/200/400/600NL + 83 WSOP = 3,499 hands. Chains @ G2 = 1,638 (1.36× target).
+
+---

@@ -3,25 +3,27 @@
 # (sized for ~1200 chains per cell after filtering loss).
 
 cells:
-  fortnite:
-    cell_id: "fortnite"
-    display_name: "Fortnite (FNCS/Cash Cup)"
-    data_source: "epic_cdn_replay"
-    tournament_tiers: ["FNCS", "Cash_Cup"]
+  pubg:
+    cell_id: "pubg"
+    display_name: "PUBG (sample matches via PUBG developer API)"
+    # Replaced Fortnite as the battle-royale cell after Epic CDN locked down
+    # public chunk access. PUBG offers a documented public API with no rate
+    # limit on /matches and telemetry endpoints.
+    data_source: "pubg_developer_api"
+    shard: "steam"
     time_range:
-      start: "2024-01-01"
-      end: "2024-12-31"
-    sample_target_matches: 200
+      start: "2026-04-01"
+      end: "2026-12-31"
+    sample_target_matches: 25
     stratification:
-      - tier: "FNCS"
+      - game_mode: "squad-fpp"
         fraction: 0.70
-      - tier: "Cash_Cup"
+      - game_mode: "solo-fpp"
         fraction: 0.30
     env_vars:
-      - EPIC_ACCOUNT_ID
-      - EPIC_ACCESS_TOKEN
+      - PUBG_API_KEY
     mock_fallback: true
-    parser: "FortniteReplayDecompressor"
+    parser: "telemetry_json"
 
   nba:
     cell_id: "nba"
@@ -82,17 +84,24 @@ cells:
 
   poker:
     cell_id: "poker"
-    display_name: "Poker (NLHE — Pluribus + WSOP 2023)"
+    display_name: "Poker (NLHE — HandHQ + WSOP 2023, all human)"
+    # Per D-37: dropped Pluribus (Brown & Sandholm 2019) because Facebook's
+    # superhuman bot occupies one of the 6 seats in every hand, contaminating
+    # ~17% of actions with non-human decisions. Switched to HandHQ
+    # (anonymised human cash games, 25NL–1000NL, July 2009) plus the 83
+    # televised WSOP 2023 $50K Players Championship final-table hands.
+    # HandHQ filtered to 6-handed hands at parse time to match the standard
+    # 6-max cash format.
     data_source: "phh_dataset_v3"
     time_range:
-      start: "2019-01-01"
-      end: "2023-12-31"
-    sample_target_games: 300
+      start: "2009-07-01"
+      end: "2023-07-31"
+    sample_target_games: 3500
     stratification:
-      - subset: "pluribus"
-        fraction: 0.60
-      - subset: "wsop-2023-50k"
-        fraction: 0.40
+      - subset: "wsop/2023"
+        fraction: 0.025   # 83 elite human hands — included whole
+      - subset: "handhq"
+        fraction: 0.975
     env_vars: []
     mock_fallback: true
-    parser: "pokerkit"
+    parser: "tomli"

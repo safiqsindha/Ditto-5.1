@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 import random
+import re
 import tarfile
 import time
 import urllib.request
@@ -36,8 +37,29 @@ _PHH_TARBALL_URL = (
 )
 # Directory name inside the tarball
 _PHH_EXTRACT_SUBDIR = "phh-dataset-3"
-# Subsets to ingest (in order of priority)
-_PHH_SUBSETS = ["pluribus", "wsop-2023-50k"]
+# Subsets to ingest. Per D-37 (DECISION_LOG): Pluribus is dropped because
+# the bot occupies one of the 6 seats in every hand, contaminating ~17% of
+# actions with superhuman-bot decisions that fall outside the human population
+# under study. We use HandHQ (anonymised human cash games) plus the 83 WSOP
+# 2023 $50K Players Championship hands.
+#
+# PHH dataset v3 layout (nested):
+#   data/handhq/<site-stake>/<bb>/*.phhs   — multi-hand TOML streams (~1k hands/file)
+#   data/wsop/2023/43/5/*.phh              — 83 single-hand TOML files
+# We rglob each subset root for both .phh and .phhs files at any depth.
+_PHH_SUBSETS = ["wsop/2023", "handhq"]
+# Only keep handhq hands with this seat count — full-ring 6-max is the standard
+# 6-handed cash format and matches Pluribus's structure for downstream comparison.
+_HANDHQ_TARGET_SEATS = 6
+
+# Per D-37 clarification: filter HandHQ to mid/high stakes (200NL–1000NL).
+# Lower brackets (25NL/50NL/100NL) reflect highly exploitative recreational
+# play that is structurally distinct from the GTO-aware decision distribution
+# the experiment is meant to characterise. 200NL+ also mirrors the standard
+# threshold in modern poker training data. HandHQ encodes stake in the
+# parent dir name as `_<NLH-bracket>NLH_`, e.g. `..._600NLH_OBFU`.
+_HANDHQ_ALLOWED_STAKES = frozenset({"200", "400", "600", "1000"})
+_HANDHQ_STAKE_RE = re.compile(r"_(\d+)NLH_")
 
 # Normalized mock event types — ordered so common actions come first
 _POKER_EVENT_TYPES = [
@@ -80,26 +102,25 @@ class PokerPipeline(BasePipeline):
         """
         Download and extract the PHH v3 dataset tarball.
 
-        Returns list of .phh file paths from Pluribus + WSOP subsets.
-        Download is skipped when files already exist.
+        Returns list of file paths (both .phh and .phhs) from the active
+        subsets per D-37: handhq (multi-hand .phhs streams) and wsop/2023
+        (single-hand .phh files). Download is skipped when files exist.
         """
         raw_dir = self.raw_dir / "phh"
         raw_dir.mkdir(parents=True, exist_ok=True)
 
-        # Check whether we already have extracted .phh files
         all_paths: list[Path] = []
         need_download = False
 
         for subset in _PHH_SUBSETS:
-            # Try both pre-extracted path and within-tarball path
             for candidate in [
                 raw_dir / subset,
                 raw_dir / _PHH_EXTRACT_SUBDIR / "data" / subset,
             ]:
                 if candidate.exists():
-                    found = sorted(candidate.glob("*.phh"))
+                    found = _scan_subset(candidate)
                     if found:
-                        logger.info(f"[poker] {subset}: {len(found)} cached .phh files")
+                        logger.info(f"[poker] {subset}: {len(found)} cached files")
                         all_paths.extend(found)
                         break
             else:
@@ -123,49 +144,80 @@ class PokerPipeline(BasePipeline):
                 logger.warning(f"[poker] Extraction failed: {exc}")
                 return []
 
-            # Re-scan after extraction
             all_paths = []
             for subset in _PHH_SUBSETS:
                 for candidate in [
                     raw_dir / _PHH_EXTRACT_SUBDIR / "data" / subset,
                     raw_dir / subset,
                 ]:
-                    found = sorted(candidate.glob("*.phh"))
+                    found = _scan_subset(candidate)
                     if found:
                         all_paths.extend(found)
                         break
 
-        logger.info(f"[poker] {len(all_paths)} .phh files available")
+        logger.info(f"[poker] {len(all_paths)} files available")
         return all_paths
 
     def parse(self, raw_paths: list[Path]) -> list[dict]:
         """
-        Load each .phh file via pokerkit and anonymise player names (CF-4=B).
+        Parse PHH files as TOML and anonymise player names (CF-4=B).
+
+        Both .phh (single hand) and .phhs (multi-hand stream) are plain TOML,
+        so we sidestep pokerkit entirely. handhq files are .phhs streams of
+        ~1k hands; we filter to _HANDHQ_TARGET_SEATS (6-max) per D-37.
 
         Returns a list of hand dicts with keys:
           game_id, players (anonymised), starting_stacks, blinds,
           big_blind, actions, subset
         """
         try:
-            from pokerkit import HandHistory  # noqa: PLC0415
+            import tomllib as _toml  # 3.11+ stdlib
         except ImportError:
-            logger.warning(
-                "[poker] pokerkit not installed. "
-                "Install with: pip install pokerkit. "
-                "Returning empty parse."
-            )
-            return []
+            try:
+                import tomli as _toml  # 3.9/3.10 backport
+            except ImportError:
+                logger.warning(
+                    "[poker] Neither tomllib nor tomli is installed. "
+                    "Install with: pip install tomli. Returning empty parse."
+                )
+                return []
 
         records: list[dict] = []
         target = self.config.sample_target
 
+        # Per-stake budgets so the sample is stratified across the four
+        # allowed HandHQ brackets rather than consumed entirely from whichever
+        # stake sorts first lexicographically. WSOP hands are uncapped (small
+        # premium subset, processed before handhq via _PHH_SUBSETS ordering).
+        wsop_quota_estimate = 83
+        per_stake_budget = max(
+            1,
+            (target - wsop_quota_estimate) // len(_HANDHQ_ALLOWED_STAKES),
+        )
+        budgets: dict[str, int] = {s: per_stake_budget for s in _HANDHQ_ALLOWED_STAKES}
+
         for path in raw_paths:
             if len(records) >= target:
                 break
+
+            stake = None
+            if "handhq" in path.parts:
+                m = _HANDHQ_STAKE_RE.search(str(path))
+                if not m or m.group(1) not in _HANDHQ_ALLOWED_STAKES:
+                    continue
+                stake = m.group(1)
+                if budgets.get(stake, 0) <= 0:
+                    continue
+
             try:
-                record = _load_phh_record(HandHistory, path)
-                if record:
-                    records.append(record)
+                for rec in _iter_records_from_path(_toml, path):
+                    records.append(rec)
+                    if stake is not None:
+                        budgets[stake] -= 1
+                        if budgets[stake] <= 0:
+                            break
+                    if len(records) >= target:
+                        break
             except Exception as exc:
                 logger.debug(f"[poker] parse error {path.name}: {exc}")
 
@@ -265,6 +317,114 @@ def _stamp_poker_streets(stream: EventStream) -> None:
             ev.phase = "river"
         # Mirror phase into location_context for PokerT
         ev.location_context["street"] = ev.phase
+
+
+def _scan_subset(root: Path) -> list[Path]:
+    """
+    Return sorted list of .phh and .phhs files under `root`.
+    Both extensions coexist in v3: handhq uses .phhs (multi-hand streams),
+    wsop and pluribus use .phh (single-hand files).
+    """
+    return sorted(list(root.rglob("*.phh")) + list(root.rglob("*.phhs")))
+
+
+def _iter_records_from_path(toml_module, path: Path):
+    """
+    Yield record dicts from a .phh or .phhs file.
+
+    .phh  → one record from the file's top-level table.
+    .phhs → one record per [N] sub-table (each a separate hand).
+
+    For handhq paths, hands not matching _HANDHQ_TARGET_SEATS are filtered.
+    """
+    is_handhq = "handhq" in path.parts
+
+    # Per D-37 clarification: drop entire HandHQ files whose stake bracket
+    # is outside the allowed set. This filter operates at the file level
+    # because each .phhs file is homogeneous on stake.
+    if is_handhq:
+        m = _HANDHQ_STAKE_RE.search(str(path))
+        if not m or m.group(1) not in _HANDHQ_ALLOWED_STAKES:
+            return
+
+    with open(path, "rb") as f:
+        data = toml_module.load(f)
+
+    subset = _derive_subset(path)
+
+    if path.suffix == ".phhs":
+        # Multi-hand stream: top-level keys are stringified hand indices ("1", "2", ...).
+        for idx, hand in data.items():
+            if not isinstance(hand, dict):
+                continue
+            if is_handhq and len(hand.get("players", []) or []) != _HANDHQ_TARGET_SEATS:
+                continue
+            rec = _record_from_hand_dict(hand, path.stem + f"_{idx}", subset)
+            if rec:
+                yield rec
+    else:
+        # .phh single-hand file: data is the hand itself.
+        rec = _record_from_hand_dict(data, path.stem, subset)
+        if rec:
+            yield rec
+
+
+def _record_from_hand_dict(hand: dict, base_id: str, subset: str) -> dict | None:
+    """
+    Build the record dict the extractor expects from a parsed PHH hand.
+
+    Anonymises player names (CF-4=B). HandHQ names are already obfuscated
+    base64 hashes; WSOP names are real and replaced here.
+    """
+    players = list(hand.get("players", []) or [])
+    actions = list(hand.get("actions", []) or [])
+    if not players or not actions:
+        return None
+
+    # PHH stacks/stakes can be float for cash games or int for tournaments.
+    # Cash games occasionally use `inf` for unknown starting stacks; tomli
+    # passes those through as float('inf'), which int() would crash on.
+    starting_stacks = [_safe_int(x) for x in hand.get("starting_stacks", []) or []]
+    blinds = [_safe_int(x) for x in hand.get("blinds_or_straddles", []) or []]
+
+    actor_map = {name: f"actor_{i}" for i, name in enumerate(players)}
+    anon_players = [actor_map.get(p, f"actor_{i}") for i, p in enumerate(players)]
+    big_blind = max(blinds) if blinds else 100
+
+    return {
+        "game_id": f"pk_{base_id}",
+        "players": anon_players,
+        "n_players": len(players),
+        "starting_stacks": starting_stacks,
+        "blinds": blinds,
+        "big_blind": big_blind,
+        "actions": actions,
+        "subset": subset,
+    }
+
+
+def _safe_int(x) -> int:
+    """Coerce TOML numeric (incl. float('inf')) to int with a sane default."""
+    try:
+        v = int(x)
+        return v
+    except (ValueError, TypeError, OverflowError):
+        # `inf` or non-numeric — use a large stand-in so the extractor's
+        # stack arithmetic doesn't blow up. Real-world stacks rarely exceed
+        # 1M big blinds.
+        return 1_000_000
+
+
+def _derive_subset(path: Path) -> str:
+    """First dir below v3's data/ root — e.g. 'handhq', 'wsop', 'pluribus'."""
+    parts = path.parts
+    # The path contains 'data' twice: once as the project root (data/raw/...)
+    # and once as the dataset's data/ dir under phh-dataset-3/. We want the
+    # one under phh-dataset-3, which is the LAST occurrence.
+    last_data = max((i for i, p in enumerate(parts) if p == "data"), default=-1)
+    if last_data >= 0 and last_data + 1 < len(parts):
+        return parts[last_data + 1]
+    return "unknown"
 
 
 def _load_phh_record(HandHistory, path: Path) -> dict | None:

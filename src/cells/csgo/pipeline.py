@@ -112,8 +112,12 @@ class CSGOPipeline(BasePipeline):
         return ids
 
     def _get_championship_ids(self) -> list[str]:
+        # `type=ongoing` returns active championships (status=started) which
+        # actually contain finished past matches. The default listing is
+        # dominated by cancelled/adjustment 1v1 events that have no past
+        # matches. See _list_match_ids 5v5 filter below.
         url = f"{FACEIT_API}/championships"
-        params = {"game": "cs2", "limit": 20}
+        params = {"game": "cs2", "type": "ongoing", "limit": 20}
         resp = self._get_with_backoff(url, params=params)
         if resp is None or resp.status_code != 200:
             logger.warning(f"[csgo] Championships list failed: {getattr(resp, 'status_code', 'no response')}")
@@ -121,12 +125,21 @@ class CSGOPipeline(BasePipeline):
         return [c["championship_id"] for c in resp.json().get("items", [])]
 
     def _get_championship_match_ids(self, championship_id: str) -> list[str]:
+        # Pull match objects (not just IDs) so we can filter to 5v5 rosters —
+        # 1v1/2v2 events live in the same listing and we only want full team CS2.
         url = f"{FACEIT_API}/championships/{championship_id}/matches"
-        params = {"type": "past", "limit": 20}
+        params = {"type": "past", "limit": 100}
         resp = self._get_with_backoff(url, params=params)
         if resp is None or resp.status_code != 200:
             return []
-        return [m["match_id"] for m in resp.json().get("items", [])]
+        match_ids: list[str] = []
+        for m in resp.json().get("items", []):
+            teams = m.get("teams", {}) or {}
+            f1 = teams.get("faction1", {}).get("roster", []) or []
+            f2 = teams.get("faction2", {}).get("roster", []) or []
+            if len(f1) >= 5 and len(f2) >= 5 and m.get("status") == "FINISHED":
+                match_ids.append(m["match_id"])
+        return match_ids
 
     def _fetch_match_stats(self, match_id: str) -> dict | None:
         url = f"{FACEIT_API}/matches/{match_id}/stats"

@@ -217,9 +217,24 @@ class FortnitePipeline(BasePipeline):
         if resp is None:
             return None
         try:
-            download_url = resp.json().get("url", "")
+            body = resp.json()
         except Exception:
             return None
+        # Epic's actual response shape:
+        #   {"files": {"<path>": {"readLink": "<presigned-cloudfront-url>", ...}},
+        #    "folderThrottled": ..., "maxFileSizeBytes": ..., "expiresAt": ...}
+        # The download URL lives in files[<single-key>]["readLink"], NOT at the
+        # top level. The dict has a single entry per chunk-access call.
+        files = body.get("files", {})
+        if isinstance(files, dict):
+            entries = list(files.values())
+        elif isinstance(files, list):
+            entries = files
+        else:
+            entries = []
+        if not entries or not isinstance(entries[0], dict):
+            return None
+        download_url = entries[0].get("readLink", "")
         if not download_url:
             return None
 
