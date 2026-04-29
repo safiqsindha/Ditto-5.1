@@ -112,6 +112,7 @@ class CellRunner:
         baseline_responses: dict[str, list[str]] | None = None,
         intervention_responses: dict[str, list[str]] | None = None,
         ground_truths: dict[str, list[str]] | None = None,
+        n_per_cell: int | None = None,
     ) -> RunReport:
         """
         Run the full pipeline for all registered cells.
@@ -122,6 +123,10 @@ class CellRunner:
         baseline_responses    : {cell: [model_response_str, ...]}  (per chain)
         intervention_responses: {cell: [model_response_str, ...]}
         ground_truths         : {cell: [ground_truth_str, ...]}
+        n_per_cell            : optional cap on chains per cell after Gate 2.
+                                Used by run_eval --n-per-cell for pilots; must
+                                match the cap used to generate response lists
+                                or the H1 pairing assertion will fire.
 
         When baseline/intervention/ground_truth are None, scoring is skipped
         (useful for infrastructure validation without real model calls).
@@ -148,6 +153,7 @@ class CellRunner:
                 baseline_responses=(baseline_responses or {}).get(cell),
                 intervention_responses=(intervention_responses or {}).get(cell),
                 ground_truths=(ground_truths or {}).get(cell),
+                n_per_cell=n_per_cell,
             )
             cell_results.append(result)
             if result.mcnemar:
@@ -182,6 +188,7 @@ class CellRunner:
         baseline_responses: list[str] | None,
         intervention_responses: list[str] | None,
         ground_truths: list[str] | None,
+        n_per_cell: int | None = None,
     ) -> CellResult:
         errors = []
         n_events = sum(len(s) for s in streams)
@@ -218,6 +225,13 @@ class CellRunner:
             chains, floor=self.config.gate2_retention_floor
         )
         chains_passed = [c for c in chains if c.is_actionable]
+
+        # If a per-cell cap is set (e.g. for the real-Haiku pilot), trim here
+        # so the chain count matches what was sent to the model upstream.
+        # Trim BEFORE capturing n_post_gate2 so the McNemar result reflects
+        # the actual scored count, not the upstream pre-cap count.
+        if n_per_cell is not None and len(chains_passed) > n_per_cell:
+            chains_passed = chains_passed[:n_per_cell]
         n_post_gate2 = len(chains_passed)
 
         # Step 3: Scoring (skipped if no model responses provided)

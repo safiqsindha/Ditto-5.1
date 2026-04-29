@@ -37,7 +37,24 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()  # loads .env from project root (or any parent directory)
+    # Default load_dotenv() doesn't override existing environment variables,
+    # which means a shell that has e.g. `export ANTHROPIC_API_KEY=` (empty)
+    # masks the real value in .env. Override empty/whitespace values
+    # explicitly so .env wins for any key the shell hasn't really set.
+    import os
+    load_dotenv()
+    from pathlib import Path
+    _env_file = Path(__file__).parent / ".env"
+    if _env_file.exists():
+        for _line in _env_file.read_text().splitlines():
+            _line = _line.strip()
+            if not _line or _line.startswith("#") or "=" not in _line:
+                continue
+            _k, _, _v = _line.partition("=")
+            _k = _k.strip()
+            _v = _v.strip().strip('"').strip("'")
+            if _v and not os.environ.get(_k, "").strip():
+                os.environ[_k] = _v
 except ImportError:
     pass  # python-dotenv not installed; set env vars manually or via CI secrets
 
@@ -57,6 +74,8 @@ def run_eval(
     dry_run: bool = False,
     force_mock: bool = False,
     include_shuffle: bool = True,
+    use_batch: bool = False,
+    n_per_cell: int | None = None,
 ) -> bool:
     from src.cells.csgo.pipeline import CSGOPipeline
     from src.cells.fortnite.pipeline import FortnitePipeline  # legacy fixture
@@ -97,7 +116,12 @@ def run_eval(
         model=HAIKU_MODEL,
         dry_run=dry_run,
         allowed_predictions=["yes", "no"],
+        use_batch=use_batch and not dry_run,
     )
+    if use_batch and not dry_run:
+        logger.info(
+            "Batch mode enabled — Anthropic Batches API (50%% discount, 24h SLA)"
+        )
 
     # Primary eval accumulators (real chains, GT="yes")
     streams_by_cell: dict = {}
@@ -148,6 +172,16 @@ def run_eval(
         if not chains_passed:
             logger.warning(f"[{cell}] No chains passed Gate 2, skipping")
             continue
+
+        # Pilot/cap: limit per-cell chain count for budget control. Applied
+        # after Gate 2 so the kept chains are all actionable. This trims the
+        # primary set; CF-3=A shuffle controls inherit the same trimmed set.
+        if n_per_cell is not None and len(chains_passed) > n_per_cell:
+            logger.info(
+                f"[{cell}] Trimming chains_passed from {len(chains_passed)} "
+                f"to {n_per_cell} (--n-per-cell)"
+            )
+            chains_passed = chains_passed[:n_per_cell]
 
         builder_cls = PER_CELL_PROMPT_BUILDERS.get(cell)
         if builder_cls is None:
@@ -234,6 +268,7 @@ def run_eval(
         baseline_responses=baseline_responses,
         intervention_responses=intervention_responses,
         ground_truths=ground_truths,
+        n_per_cell=n_per_cell,
     )
 
     _print_eval_summary(report, shuffle_results)
@@ -399,6 +434,17 @@ def main():
         "--no-shuffle", action="store_true",
         help="Skip CF-3=A shuffled-control evaluation"
     )
+    parser.add_argument(
+        "--batch", action="store_true",
+        help="Use Anthropic Batches API (50%% cost discount, 24h SLA). "
+             "Recommended for full eval; skip for quick pilots if you need "
+             "results in under an hour."
+    )
+    parser.add_argument(
+        "--n-per-cell", type=int, default=None,
+        help="Limit chains evaluated per cell (post-Gate-2). Use for the "
+             "real-Haiku pilot, e.g. --n-per-cell 200."
+    )
     args = parser.parse_args()
 
     if not args.dry_run:
@@ -417,6 +463,8 @@ def main():
         dry_run=args.dry_run,
         force_mock=args.force_mock,
         include_shuffle=not args.no_shuffle,
+        use_batch=args.batch,
+        n_per_cell=args.n_per_cell,
     )
     sys.exit(0 if success else 1)
 
