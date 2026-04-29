@@ -13,8 +13,9 @@ from src.common.config import (
 
 class TestCellConfig:
     def test_load_all_five_cells(self):
+        # Per A2 (D-35): pubg replaces fortnite as the active battle-royale cell.
         configs = load_cell_configs()
-        expected = {"fortnite", "nba", "csgo", "rocket_league", "poker"}
+        expected = {"pubg", "nba", "csgo", "rocket_league", "poker"}
         assert set(configs.keys()) == expected
 
     def test_each_cell_has_sample_target(self):

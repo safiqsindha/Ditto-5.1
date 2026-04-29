@@ -9,7 +9,7 @@ Tests for output/print methods that aren't covered by CLI tests:
 from __future__ import annotations
 
 import pytest
-from src.cells.fortnite.pipeline import FortnitePipeline
+from src.cells.nba.pipeline import NBAPipeline
 from src.common.config import load_cell_configs
 from src.common.schema import EventStream, GameEvent
 from src.harness.mcnemar import run_mcnemar
@@ -89,8 +89,8 @@ class TestMcnemarSummary:
 
 class TestBasePipelineUtilities:
     def test_load_saved_streams_roundtrip(self, tmp_path):
-        pipeline = FortnitePipeline(
-            config=load_cell_configs()["fortnite"], data_root=tmp_path,
+        pipeline = NBAPipeline(
+            config=load_cell_configs()["nba"], data_root=tmp_path,
         )
         # Generate + save
         streams_orig = pipeline.generate_mock_data()[:3]
@@ -104,8 +104,8 @@ class TestBasePipelineUtilities:
         assert orig_ids == loaded_ids
 
     def test_load_saved_streams_handles_corrupt(self, tmp_path):
-        pipeline = FortnitePipeline(
-            config=load_cell_configs()["fortnite"], data_root=tmp_path,
+        pipeline = NBAPipeline(
+            config=load_cell_configs()["nba"], data_root=tmp_path,
         )
         # Write corrupt jsonl
         bad = pipeline.events_dir / "bad.jsonl"
@@ -115,8 +115,8 @@ class TestBasePipelineUtilities:
         assert loaded == []
 
     def test_clear_events_dir(self, tmp_path):
-        pipeline = FortnitePipeline(
-            config=load_cell_configs()["fortnite"], data_root=tmp_path,
+        pipeline = NBAPipeline(
+            config=load_cell_configs()["nba"], data_root=tmp_path,
         )
         streams = pipeline.generate_mock_data()[:2]
         pipeline._save_streams(streams)
@@ -127,8 +127,8 @@ class TestBasePipelineUtilities:
         assert files_after == []
 
     def test_run_with_clear_existing(self, tmp_path):
-        pipeline = FortnitePipeline(
-            config=load_cell_configs()["fortnite"], data_root=tmp_path,
+        pipeline = NBAPipeline(
+            config=load_cell_configs()["nba"], data_root=tmp_path,
         )
         # First run
         pipeline.config.sample_target = 5  # smaller for test speed
@@ -165,6 +165,7 @@ class TestTranslationImplementations:
 
     @pytest.mark.parametrize("t_class,cell_name", [
         ("FortniteT", "fortnite"),
+        ("PUBGT", "pubg"),
         ("NBAT", "nba"),
         ("CSGOT", "csgo"),
         ("RocketLeagueT", "rocket_league"),
@@ -178,6 +179,7 @@ class TestTranslationImplementations:
 
     @pytest.mark.parametrize("t_class,cell_name", [
         ("FortniteT", "fortnite"),
+        ("PUBGT", "pubg"),
         ("NBAT", "nba"),
         ("CSGOT", "csgo"),
         ("RocketLeagueT", "rocket_league"),
@@ -562,3 +564,121 @@ class TestFortniteBuildCostT:
         # Build triggers (build_decision, resource_spend, resource_budget)
         # must not overlap with storm triggers (zone_enter, zone_exit, position_commit)
         assert build_trigger_types.isdisjoint(storm_trigger_types)
+
+
+class TestPUBGT:
+    """PUBGT (A2/D-35): mirrors FortniteT structure for the BR cell."""
+
+    @staticmethod
+    def _pubg_stream(n_zone=4, n_other=40):
+        """Build a synthetic PUBG event stream with zone triggers + filler."""
+        events = []
+        seq = 0
+        # Filler engage_decision events
+        for i in range(n_other):
+            events.append(GameEvent(
+                timestamp=float(i),
+                event_type="engage_decision",
+                actor=f"p{i % 4}",
+                location_context={"phase": i // 10},
+                raw_data_blob={},
+                cell="pubg",
+                game_id="pubg_test_001",
+                sequence_idx=seq,
+            ))
+            seq += 1
+        # Zone triggers spaced through the stream
+        for i in range(n_zone):
+            events.append(GameEvent(
+                timestamp=float(100 + i * 50),
+                event_type="zone_enter" if i % 2 == 0 else "position_commit",
+                actor="zone" if i % 2 == 0 else f"p{i}",
+                location_context={"phase": i + 1},
+                raw_data_blob={},
+                cell="pubg",
+                game_id="pubg_test_001",
+                sequence_idx=seq,
+            ))
+            seq += 1
+        # Sort by timestamp so triggers are interleaved
+        events.sort(key=lambda e: e.timestamp)
+        for idx, e in enumerate(events):
+            e.sequence_idx = idx
+        return EventStream(game_id="pubg_test_001", cell="pubg", events=events)
+
+    def test_cell_is_pubg(self):
+        from src.interfaces.translation import PUBGT
+        assert PUBGT().cell == "pubg"
+
+    def test_empty_stream_returns_empty(self):
+        from src.interfaces.translation import PUBGT
+        result = PUBGT().translate(EventStream(game_id="x", cell="pubg"))
+        assert result == []
+
+    def test_produces_chains_from_zone_triggers(self):
+        from src.interfaces.translation import PUBGT
+        stream = self._pubg_stream(n_zone=4, n_other=40)
+        chains = PUBGT().translate(stream)
+        assert len(chains) > 0
+        for c in chains:
+            assert c.cell == "pubg"
+            assert c.chain_metadata["chain_type"] == "zone_rotation"
+            assert c.chain_metadata["trigger_type"] in {
+                "zone_enter", "zone_exit", "position_commit",
+            }
+
+    def test_chain_window_size_eight(self):
+        from src.interfaces.translation import PUBGT
+        stream = self._pubg_stream(n_zone=4, n_other=40)
+        chains = PUBGT().translate(stream)
+        for c in chains:
+            assert 2 <= len(c.events) <= 8
+
+    def test_chain_ids_unique(self):
+        from src.interfaces.translation import PUBGT
+        stream = self._pubg_stream(n_zone=6, n_other=40)
+        chains = PUBGT().translate(stream)
+        ids = [c.chain_id for c in chains]
+        assert len(ids) == len(set(ids)), "Duplicate PUBG chain IDs"
+
+    def test_pubg_in_domain_t_stubs(self):
+        from src.interfaces.translation import DOMAIN_T_STUBS, PUBGT
+        assert "pubg" in DOMAIN_T_STUBS
+        assert isinstance(DOMAIN_T_STUBS["pubg"], PUBGT)
+
+    def test_pubg_in_prompt_builders(self):
+        from src.harness.prompts import PER_CELL_PROMPT_BUILDERS, PUBGPromptBuilder
+        assert "pubg" in PER_CELL_PROMPT_BUILDERS
+        assert PER_CELL_PROMPT_BUILDERS["pubg"] is PUBGPromptBuilder
+
+    def test_end_to_end_pubg_pipeline(self):
+        """T → ChainBuilder → PromptBuilder produces a valid PromptPair."""
+        from src.harness.prompts import PUBGPromptBuilder
+        from src.interfaces.chain_builder import FixedPerCellChainBuilder
+        from src.interfaces.translation import PUBGT
+
+        stream = self._pubg_stream(n_zone=4, n_other=40)
+        t = PUBGT()
+        chains = t.translate(stream)
+        assert chains, "T produced no chains"
+
+        builder = FixedPerCellChainBuilder(per_cell_chain_length={"pubg": 8})
+        trimmed = builder.build_from_candidates(chains, cell="pubg")
+        assert trimmed, "ChainBuilder produced no chains"
+        for c in trimmed:
+            assert len(c.events) == 8
+
+        prompt_builder = PUBGPromptBuilder()
+        for c in trimmed[:2]:
+            pair = prompt_builder.build(c)
+            assert pair.cell == "pubg"
+            assert pair.baseline_prompt
+            assert pair.intervention_prompt
+            assert pair.intervention_prompt != pair.baseline_prompt
+            # Intervention must include the constraint context
+            assert "safe zone" in pair.intervention_prompt.lower()
+            # Baseline must NOT include the constraint context
+            assert "safe zone" not in pair.baseline_prompt.lower()
+            # Both ask the binary YES/NO question
+            assert "yes or no" in pair.baseline_prompt.lower()
+            assert "yes or no" in pair.intervention_prompt.lower()

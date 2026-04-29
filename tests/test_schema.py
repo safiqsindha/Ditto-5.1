@@ -62,8 +62,9 @@ class TestGameEvent:
         assert ev2.timestamp == 42.0
 
     def test_valid_cells_set(self):
+        # 5 active cells + fortnite (legacy fixture, kept per A2/D-35)
         assert VALID_CELLS == frozenset(
-            ["fortnite", "nba", "csgo", "rocket_league", "poker"]
+            ["fortnite", "pubg", "nba", "csgo", "rocket_league", "poker"]
         )
 
 

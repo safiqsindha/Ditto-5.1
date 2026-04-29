@@ -4,20 +4,26 @@ Tests for v5 data acquisition pipelines (mock paths only — no network).
 
 import pytest
 from src.cells.csgo.pipeline import CSGOPipeline
-from src.cells.fortnite.pipeline import FortnitePipeline
-from src.cells.poker.pipeline import PokerPipeline
+from src.cells.fortnite.pipeline import FortnitePipeline  # legacy fixture
 from src.cells.nba.pipeline import NBAPipeline
+from src.cells.poker.pipeline import PokerPipeline
+from src.cells.pubg.pipeline import PUBGPipeline
 from src.cells.rocket_league.pipeline import RocketLeaguePipeline
 from src.common.config import load_cell_configs
-from src.common.schema import VALID_CELLS, EventStream, GameEvent
+from src.common.schema import EventStream, GameEvent
 
+# Per A2 (D-35): pubg replaces fortnite as the active battle-royale cell.
+# fortnite kept here so legacy tests still resolve a class, but parametrize
+# only over the 5 active cells (which is what cells.yaml exposes).
 PIPELINE_CLASSES = {
-    "fortnite": FortnitePipeline,
+    "pubg": PUBGPipeline,
     "nba": NBAPipeline,
     "csgo": CSGOPipeline,
     "rocket_league": RocketLeaguePipeline,
     "poker": PokerPipeline,
+    "fortnite": FortnitePipeline,
 }
+ACTIVE_CELLS = ["pubg", "nba", "csgo", "rocket_league", "poker"]
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +31,7 @@ def configs():
     return load_cell_configs()
 
 
-@pytest.mark.parametrize("cell", sorted(VALID_CELLS))
+@pytest.mark.parametrize("cell", ACTIVE_CELLS)
 class TestPipelineMockPath:
     def test_pipeline_constructible(self, configs, cell, tmp_path):
         config = configs[cell]
@@ -68,22 +74,19 @@ class TestPipelineMockPath:
 
 def test_force_mock_overrides_credentials(configs, tmp_path, monkeypatch):
     """Even if credentials are set, force_mock=True must use mock data."""
-    monkeypatch.setenv("EPIC_ACCOUNT_ID", "fake")
-    monkeypatch.setenv("EPIC_ACCESS_TOKEN", "fake")
-    config = configs["fortnite"]
-    pipeline = FortnitePipeline(config=config, data_root=tmp_path)
+    # Per A2 (D-35): use pubg in place of the legacy fortnite fixture.
+    monkeypatch.setenv("PUBG_API_KEY", "fake")
+    config = configs["pubg"]
+    pipeline = PUBGPipeline(config=config, data_root=tmp_path)
     streams = pipeline.run(force_mock=True)
-    # Should not have called real fetch
     assert all(s.metadata.get("mock") is True for s in streams)
 
 
 def test_mock_fallback_when_credentials_missing(configs, tmp_path, monkeypatch):
     """Pipelines with required env vars should fall back to mock when missing."""
-    monkeypatch.delenv("EPIC_ACCOUNT_ID", raising=False)
-    monkeypatch.delenv("EPIC_ACCESS_TOKEN", raising=False)
-    config = configs["fortnite"]
-    pipeline = FortnitePipeline(config=config, data_root=tmp_path)
-    # config.should_use_mock() should return True
+    monkeypatch.delenv("PUBG_API_KEY", raising=False)
+    config = configs["pubg"]
+    pipeline = PUBGPipeline(config=config, data_root=tmp_path)
     assert config.should_use_mock()
     streams = pipeline.run()
     assert all(s.metadata.get("mock") is True for s in streams)

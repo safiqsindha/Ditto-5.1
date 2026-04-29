@@ -62,8 +62,12 @@ class TranslationFunction(ABC):
 
 
 # ---------------------------------------------------------------------------
-# Fortnite T
-# Phase B decisions: F-1 storm-zone boundary + elimination causality,
+# Fortnite T  ⚠ LEGACY — superseded by PUBGT per A2 (D-35).
+# Kept as a test fixture and historical reference for the F-1/F-2/F-3
+# decisions. Not included in active evaluation runs (PUBG inherits the
+# battle-royale slot). Do not use for new work — use PUBGT instead.
+# Phase B decisions (preserved for the historical record):
+#   F-1 storm-zone boundary + elimination causality,
 #   F-2 storm-rotation phase, F-3 N=8
 # ---------------------------------------------------------------------------
 
@@ -194,6 +198,83 @@ class FortniteBuildCostT(TranslationFunction):
                     "window_start": start,
                     "window_size": len(window),
                     "me": "ME-FN-1",
+                },
+            ))
+
+        return chains
+
+
+# ---------------------------------------------------------------------------
+# PUBG T
+# Per A2 (D-35) — replaces Fortnite as the battle-royale cell. Mirrors
+# FortniteT structurally because the constraint type (zone-rotation +
+# elimination causality) is preserved across the swap. Bot filter (D-36)
+# is enforced upstream in the extractor; PUBGT receives only human-attributed
+# events and need not re-filter.
+# Decisions:
+#   - Triggers: zone_enter / zone_exit / position_commit (mirrors F-1)
+#   - N=8 (mirrors F-3, the BR zone-rotation window)
+# ---------------------------------------------------------------------------
+
+_PUBG_ZONE_TRIGGERS = frozenset({"zone_enter", "zone_exit", "position_commit"})
+_PUBG_N = 8
+
+
+class PUBGT(TranslationFunction):
+    """
+    Extract zone-rotation phase windows from a PUBG event stream.
+
+    Algorithm: for each zone-boundary event (zone_enter / zone_exit /
+    position_commit), emit a window of _PUBG_N events centered on it.
+    Windows are de-duplicated by start index so consecutive triggers don't
+    produce overlapping chains. Identical structure to FortniteT —
+    the constraint shape is preserved across the A2 cell swap.
+
+    Constraint: blue-zone boundary (player must stay inside the safe zone
+    or take damage that scales per phase) + elimination causality
+    (eliminated player cannot generate further actions).
+    """
+
+    @property
+    def cell(self) -> str:
+        return "pubg"
+
+    def translate(self, stream: EventStream) -> list[ChainCandidate]:
+        events = stream.events
+        if not events:
+            return []
+
+        half = _PUBG_N // 2
+        seen_starts: set[int] = set()
+        chains: list[ChainCandidate] = []
+
+        for i, ev in enumerate(events):
+            if ev.event_type not in _PUBG_ZONE_TRIGGERS:
+                continue
+            start = max(0, i - half)
+            end = start + _PUBG_N
+            if end > len(events):
+                end = len(events)
+                start = max(0, end - _PUBG_N)
+            if start in seen_starts:
+                continue
+            seen_starts.add(start)
+
+            window = events[start:end]
+            if len(window) < 2:
+                continue
+
+            chains.append(ChainCandidate(
+                chain_id=self._chain_id(stream.game_id, f"pubg_zone_{start}"),
+                game_id=stream.game_id,
+                cell="pubg",
+                events=window,
+                chain_metadata={
+                    "chain_type": "zone_rotation",
+                    "trigger_type": ev.event_type,
+                    "trigger_idx": i,
+                    "window_start": start,
+                    "window_size": len(window),
                 },
             ))
 
@@ -473,11 +554,15 @@ from ..cells.poker.poker_t import PokerPerSessionT, PokerT  # noqa: E402
 # ---------------------------------------------------------------------------
 
 DOMAIN_T_STUBS: dict[str, TranslationFunction] = {
-    "fortnite": FortniteT(),
+    "pubg": PUBGT(),                # active battle-royale cell (per A2/D-35)
     "nba": NBAT(),
     "csgo": CSGOT(),
     "rocket_league": RocketLeagueT(),
     "poker": PokerT(),
+    # FortniteT kept as legacy for tests but no longer in the active 5 cells
+    # per A2 (Epic CDN locked down public chunk access). Do not include in
+    # ALL_CELLS or in evaluation runs.
+    "fortnite": FortniteT(),
 }
 
 # ME-RL-1 variant registry — per-player RL chains (micro-experiment).

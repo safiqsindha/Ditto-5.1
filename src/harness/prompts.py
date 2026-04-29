@@ -190,8 +190,16 @@ _CLASSIFY_QUESTION = (
 )
 
 
+# Constraint-context wording locked in T-design review (2026-04-28, both
+# authors). Per that review, constraint blocks are stripped of domain-name
+# anchors so the intervention condition tests "follow these rules" rather
+# than "recall this game's Wikipedia page". The question template still
+# names the domain — that decision was deferred (see review §1).
+
+
 class FortnitePromptBuilder(PromptBuilder):
-    """F-5 constraint context locked Phase B."""
+    """⚠ LEGACY — superseded by PUBGPromptBuilder per A2 (D-35). Kept as
+    a test fixture; not in active PER_CELL_PROMPT_BUILDERS for evaluation."""
 
     def __init__(self):
         super().__init__(cell="fortnite")
@@ -207,18 +215,35 @@ class FortnitePromptBuilder(PromptBuilder):
         return _CLASSIFY_QUESTION.format(domain="Fortnite")
 
 
+class PUBGPromptBuilder(PromptBuilder):
+    """Per A2 (D-35), replaces FortnitePromptBuilder in active evaluation.
+    Wording locked in T-design review (2026-04-28)."""
+
+    def __init__(self):
+        super().__init__(cell="pubg")
+
+    def format_constraint_context(self, chain: ChainCandidate) -> str:
+        return (
+            "Players must stay inside the shrinking safe zone; remaining outside "
+            "deals damage that increases per phase. An eliminated player cannot "
+            "act. Squads consist of up to 4 players who can revive downed teammates."
+        )
+
+    def format_question(self, chain: ChainCandidate) -> str:
+        return _CLASSIFY_QUESTION.format(domain="PUBG")
+
+
 class NBAPromptBuilder(PromptBuilder):
-    """N-5 constraint context locked Phase B."""
+    """N-5 constraint context. Wording locked in T-design review (2026-04-28)."""
 
     def __init__(self):
         super().__init__(cell="nba")
 
     def format_constraint_context(self, chain: ChainCandidate) -> str:
         return (
-            "In NBA basketball, the offensive team must attempt a shot within 24 "
-            "seconds of gaining possession. Personal fouls accumulate; a player with "
-            "six fouls is ejected and cannot return. Possession changes on made shots, "
-            "turnovers, and defensive rebounds."
+            "Offensive team must shoot within 24 seconds of gaining possession. "
+            "A player with 6 fouls is ejected. Possession changes on made shots, "
+            "turnovers, defensive rebounds."
         )
 
     def format_question(self, chain: ChainCandidate) -> str:
@@ -226,17 +251,16 @@ class NBAPromptBuilder(PromptBuilder):
 
 
 class CSGOPromptBuilder(PromptBuilder):
-    """C-5 constraint context locked Phase B."""
+    """C-5 constraint context. Wording locked in T-design review (2026-04-28)."""
 
     def __init__(self):
         super().__init__(cell="csgo")
 
     def format_constraint_context(self, chain: ChainCandidate) -> str:
         return (
-            "In Counter-Strike, each round one team plants and detonates the bomb "
-            "(Terrorist win) or the other defuses it or eliminates all attackers "
-            "(Counter-Terrorist win). Eliminated players do not respawn until the next "
-            "round. The bomb may only be planted at designated sites A or B."
+            "T wins by detonating bomb or eliminating CTs. CT wins by defusing "
+            "bomb, eliminating Ts, or time expiring. Eliminated players don't "
+            "respawn until next round. Bomb plants only at sites A or B."
         )
 
     def format_question(self, chain: ChainCandidate) -> str:
@@ -244,17 +268,16 @@ class CSGOPromptBuilder(PromptBuilder):
 
 
 class RocketLeaguePromptBuilder(PromptBuilder):
-    """R-5 constraint context locked Phase B."""
+    """R-5 constraint context. Wording locked in T-design review (2026-04-28)."""
 
     def __init__(self):
         super().__init__(cell="rocket_league")
 
     def format_constraint_context(self, chain: ChainCandidate) -> str:
         return (
-            "In Rocket League, teams of three score by hitting a ball into the opposing "
-            "goal. Each car has a boost meter capped at 100 that depletes with use; "
-            "boost is collected from pads on the field. A goal resets ball position to "
-            "center and ends the current play."
+            "Teams of 3 score by hitting the ball into the opposing goal. Boost "
+            "meter caps at 100; collected from pads. A goal resets ball and "
+            "player positions for a kickoff."
         )
 
     def format_question(self, chain: ChainCandidate) -> str:
@@ -262,21 +285,18 @@ class RocketLeaguePromptBuilder(PromptBuilder):
 
 
 class PokerPromptBuilder(PromptBuilder):
-    """P-5 constraint context locked Phase B."""
+    """P-5 constraint context. Wording locked in T-design review (2026-04-28)
+    — game-name anchor ('NLHE') stripped to test rule-following rather than
+    pretrained domain recall."""
 
     def __init__(self):
         super().__init__(cell="poker")
 
     def format_constraint_context(self, chain: ChainCandidate) -> str:
         return (
-            "In No-Limit Texas Hold'em poker, a player may fold, check (only if no "
-            "bet has been made on this street), call the current bet, or bet/raise up "
-            "to the full amount of their remaining chips (their stack). A player may "
-            "not wager more chips than they hold. Blinds are posted before cards are "
-            "dealt and count toward the first betting round. Action proceeds clockwise; "
-            "on post-flop streets the first active player to the left of the dealer "
-            "button acts first. A player who folds may not act again in the hand. At "
-            "showdown the player with the best five-card hand wins the pot."
+            "Rules: fold/check/call/bet/raise up to stack. Cannot wager more "
+            "than held. Action proceeds clockwise. Folded player can't act "
+            "again. Best 5-card hand wins at showdown."
         )
 
     def format_question(self, chain: ChainCandidate) -> str:
@@ -284,11 +304,14 @@ class PokerPromptBuilder(PromptBuilder):
 
 
 PER_CELL_PROMPT_BUILDERS = {
-    "fortnite": FortnitePromptBuilder,
+    "pubg": PUBGPromptBuilder,
     "nba": NBAPromptBuilder,
     "csgo": CSGOPromptBuilder,
     "rocket_league": RocketLeaguePromptBuilder,
     "poker": PokerPromptBuilder,
+    # FortnitePromptBuilder kept as legacy fixture (per A2/D-35); not in
+    # active evaluation.
+    "fortnite": FortnitePromptBuilder,
 }
 
 

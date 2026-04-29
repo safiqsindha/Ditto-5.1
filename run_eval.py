@@ -47,7 +47,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("run_eval")
 
-ALL_CELLS = ["fortnite", "nba", "csgo", "rocket_league", "poker"]
+ALL_CELLS = ["pubg", "nba", "csgo", "rocket_league", "poker"]
 _SHUFFLE_SEED = 42  # deterministic CF-3=A controls
 
 
@@ -59,9 +59,10 @@ def run_eval(
     include_shuffle: bool = True,
 ) -> bool:
     from src.cells.csgo.pipeline import CSGOPipeline
-    from src.cells.fortnite.pipeline import FortnitePipeline
+    from src.cells.fortnite.pipeline import FortnitePipeline  # legacy fixture
     from src.cells.nba.pipeline import NBAPipeline
     from src.cells.poker.pipeline import PokerPipeline
+    from src.cells.pubg.pipeline import PUBGPipeline
     from src.cells.rocket_league.pipeline import RocketLeaguePipeline
     from src.common.config import load_cell_configs, load_harness_config
     from src.harness.actionables import compute_retention_rate
@@ -77,15 +78,17 @@ def run_eval(
     harness_config = load_harness_config()
 
     pipeline_map = {
-        "fortnite": FortnitePipeline,
+        "pubg": PUBGPipeline,                  # active battle-royale cell (A2/D-35)
         "nba": NBAPipeline,
         "csgo": CSGOPipeline,
         "rocket_league": RocketLeaguePipeline,
         "poker": PokerPipeline,
+        "fortnite": FortnitePipeline,          # legacy fixture; not in ALL_CELLS
     }
     chain_lengths = {
-        "fortnite": 8, "nba": 5, "csgo": 10,
+        "pubg": 8, "nba": 5, "csgo": 10,
         "rocket_league": 12, "poker": 8,
+        "fortnite": 8,                         # legacy fixture
     }
 
     chain_builder = FixedPerCellChainBuilder(per_cell_chain_length=chain_lengths)

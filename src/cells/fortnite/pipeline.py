@@ -1,6 +1,15 @@
 """
 Fortnite data acquisition pipeline for v5.
 
+⚠ LEGACY — superseded by `src/cells/pubg/pipeline.py` per A2 (D-35).
+Epic locked down public chunk-data CDN access in 2025–2026 (returns 403 for
+all chunk URLs even when metadata APIs return valid `readLink` values), so
+this pipeline can no longer fetch real data. Kept as a code reference and
+test fixture for the F-1/F-2/F-3 design decisions; not in active evaluation.
+
+Original docstring follows.
+---
+
 Downloads tournament match replays from Epic's public datastorage API using
 the same embedded client credentials as the open-source ServerReplay Downloader
 (github.com/yuyutti/Fortnite_ServerReplay_Downloader).

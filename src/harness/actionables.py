@@ -74,10 +74,15 @@ ACTIONABLE_TYPES: frozenset[str] = frozenset([
 
 # Phase B locked 2026-04-27 (both authors). See DECISION_LOG D-24 through D-28.
 CELL_ACTIONABLE_OVERRIDES: dict[str, frozenset[str]] = {
-    "fortnite": frozenset([         # F-6 locked
+    "fortnite": frozenset([         # F-6 locked — legacy fixture, superseded by pubg per A2
         "storm_rotation",           # storm-zone rotation decision
         "build_decision",           # build structure (consumes material)
     ]),
+    "pubg": frozenset([],),         # active battle-royale cell per A2 (D-35)
+                                    # PUBG extractor maps to base whitelist types
+                                    # (engage_decision, zone_enter, position_commit,
+                                    # resource_gain/spend, risk_accept) — no
+                                    # PUBG-specific event types need to be added.
     "nba": frozenset([              # N-6 locked
         "shot_selection",           # shot attempt decision
         "clutch_decision",          # high-leverage end-game decision
