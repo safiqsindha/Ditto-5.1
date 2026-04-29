@@ -218,6 +218,36 @@ class TestModelEvaluatorDryRun:
         assert b1 == b2
         assert i1 == i2
 
+    def test_dry_run_cross_process_stable(self):
+        """
+        Round 2 fix: _mock_response must use a stable hash (hashlib), NOT
+        Python's built-in hash() which is randomized per-process via
+        PYTHONHASHSEED. Otherwise dry-run McNemar stats vary every run, which
+        breaks reproducibility of recorded dry-run baselines and cached
+        regression fixtures.
+
+        These golden values were captured ONCE from the hashlib-based
+        implementation; if they change, either the hashing scheme moved or
+        per-process randomization regressed.
+        """
+        from src.harness.prompts import PromptPair
+        evaluator = ModelEvaluator(dry_run=True)
+        expected = [
+            ("fixture_0", "NO",  "YES"),
+            ("fixture_1", "YES", "YES"),
+            ("fixture_2", "YES", "YES"),
+            ("fixture_3", "NO",  "YES"),
+            ("fixture_4", "NO",  "YES"),
+        ]
+        for chain_id, exp_b, exp_i in expected:
+            pair = PromptPair(
+                chain_id=chain_id, cell="nba",
+                baseline_prompt="X", intervention_prompt="Y",
+                metadata={},
+            )
+            assert evaluator._mock_response(pair, "baseline") == exp_b, chain_id
+            assert evaluator._mock_response(pair, "intervention") == exp_i, chain_id
+
 
 # ---------------------------------------------------------------------------
 # 4. Full CellRunner pipeline (end-to-end dry run)

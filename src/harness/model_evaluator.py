@@ -15,6 +15,7 @@ baseline, intervention = evaluator.evaluate_pairs(prompt_pairs)
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import time
 from dataclasses import dataclass
@@ -138,9 +139,16 @@ class ModelEvaluator:
 
         Baseline: tends toward "NO" (model without constraint context is uncertain).
         Intervention: tends toward "YES" (model with constraint context is confident).
-        Uses chain_id hash so responses are stable across re-runs.
+
+        Uses a stable hashlib digest (NOT Python's built-in hash(), which is
+        randomized per-process via PYTHONHASHSEED) so dry-run results are
+        reproducible across processes, machines, and CI runs. Without this
+        fix, two dry-runs of the same input yield different McNemar stats —
+        breaking research reproducibility for any cached/recorded baseline.
         """
-        h = hash(f"{pair.chain_id}_{variant}") % 10
+        digest = hashlib.sha256(f"{pair.chain_id}_{variant}".encode("utf-8")).digest()
+        # Take a single byte and reduce mod 10 → uniform-ish 0..9
+        h = digest[0] % 10
         if variant == "baseline":
             return "YES" if h < 4 else "NO"   # 40% YES baseline
         else:

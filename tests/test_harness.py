@@ -110,6 +110,28 @@ class TestMcNemar:
         assert agg["total_discordant"] == 0
         assert agg["cell_summaries"] == []
 
+    def test_mcnemar_empty_inputs_no_warning(self):
+        """
+        Round 2 fix: with n=0 paired observations (e.g. all-abstain case
+        reachable from CellRunner when extract_binary_vectors filters every
+        pair), _bootstrap_ci previously raised a RuntimeWarning ("Mean of
+        empty slice") and returned NaN CIs that JSON serialization could not
+        round-trip cleanly. The fixed implementation returns (0.0, 0.0).
+        """
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            result = run_mcnemar([], [], cell="nba",
+                                 bonferroni_divisor=5,
+                                 bootstrap_iterations=10)
+        assert result.n_chains == 0
+        assert result.b == 0
+        assert result.c == 0
+        assert result.statistic == 0.0
+        assert result.p_value == 1.0
+        assert result.ci_lower == 0.0
+        assert result.ci_upper == 0.0
+
     def test_bonferroni_correction_applied(self):
         baseline = [True] * 40 + [False] * 60
         intervention = [True] * 70 + [False] * 30

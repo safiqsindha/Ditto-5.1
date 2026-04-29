@@ -164,9 +164,19 @@ def _bootstrap_ci(
     seed: int,
     confidence: float,
 ) -> tuple[float, float]:
-    """Bootstrap CI on the proportion difference (P(intervention) - P(baseline))."""
-    rng = np.random.default_rng(seed)
+    """
+    Bootstrap CI on the proportion difference (P(intervention) - P(baseline)).
+
+    Returns (0.0, 0.0) when n=0 — taking np.array([]).mean() raises a
+    RuntimeWarning ("Mean of empty slice") and yields nan. The empty case
+    is reachable from CellRunner when every paired chain is an abstain on
+    both conditions, so we short-circuit cleanly rather than emitting nan
+    CIs that downstream JSON serialization can't represent.
+    """
     n = len(baseline)
+    if n == 0:
+        return (0.0, 0.0)
+    rng = np.random.default_rng(seed)
     diffs = []
     for _ in range(iterations):
         idx = rng.integers(0, n, size=n)
