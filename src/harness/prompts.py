@@ -398,14 +398,18 @@ class CSGOPromptBuilder(PromptBuilder):
         action_label = ctx.get("action_label") or "?"
         team_id = ctx.get("team_id") or ""
         team_slot = self._team_slot(team_id, ctx)
-        winner_id = ctx.get("winner_faction", "")
-        winner_slot = self._team_slot(winner_id, ctx) if winner_id else "(undecided)"
         round_num = ctx.get("round", "?")
         map_name = ctx.get("map", "?")
-        score = ctx.get("match_score", "?")
+        # 2026-04-29 (D-44 prep): DROPPED `final_score` and `final_winner` —
+        # these post-game state fields were appearing on every event line,
+        # leaking end-of-match information into per-event prompts. Reviewer
+        # synthesis (Gemini, ChatGPT) flagged this as the dominant remaining
+        # FP driver after Layer-1 strict grounding. Removing leaked state ≠
+        # tuning; it's removing information that doesn't belong on
+        # individual event lines.
         std_str = (
             f"action={action_label}, team={team_slot}, round={round_num}, "
-            f"map={map_name}, final_score={score}, final_winner={winner_slot}"
+            f"map={map_name}"
         )
         ctx_str = f"{marker_str}, {std_str}" if marker_str else std_str
         return (

@@ -65,9 +65,13 @@ logger = logging.getLogger("run_diagnostic_violations")
 
 DIAGNOSTIC_QUESTION = (
     "Does the sequence of events above contain any event that violates "
-    "the rules of {domain}?\n"
-    "Reply with exactly one word: YES (a violation is present) or NO "
-    "(no violation)."
+    "the rules of {domain}?\n\n"
+    "Most sequences are valid. Only reply YES if you can identify both "
+    "(a) which specific listed rule is broken, and (b) which specific "
+    "event in the sequence breaks it. Do not infer violations from unusual, "
+    "rare, or incomplete patterns. Ignore artifacts in formatting, timing, "
+    "or score reporting.\n\n"
+    "Reply with exactly one word: YES (a violation is present) or NO."
 )
 
 
