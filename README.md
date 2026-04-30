@@ -2,10 +2,21 @@
 
 [![v5 tests](https://github.com/safiqsindha/Ditto-V5/actions/workflows/v5-tests.yml/badge.svg)](https://github.com/safiqsindha/Ditto-V5/actions/workflows/v5-tests.yml)
 
-Five-cell parallel replication of v3's constraint-chain detection methodology across new game domains. Subject model: Claude Haiku.
+Five-cell parallel replication of v3's constraint-chain detection methodology across new game domains. Subject model: Claude Haiku 4.5.
 
-**Status:** SPEC v1.0 signed (both authors, 2026-04-27). Phase A + B complete (infrastructure, poker cell, harness, CF-3=A leakage analysis). Phase C/D (T implementation, evaluation runs) pending SPEC sign-off.
-**Reference experiments:** v3 (Chess/Checkers), v4 (single-cell methodology characterization).
+**Status:** ✅ **CLOSED 2026-04-30** — Phase D complete at n=1,200 chains/cell, results locked, methodology paused for v5.1 cross-model replication (scoped separately). Tag: [`v5.0`](https://github.com/safiqsindha/Ditto-V5/releases/tag/v5.0).
+
+**Headline finding:** 4-tier representational hierarchy of LLM constraint reasoning. 4 of 5 cells significant past Bonferroni at α/5 by many orders of magnitude. See [`STATUS.md`](STATUS.md) and [`MEMO.md`](MEMO.md).
+
+| Cell | Δ Det@Int | p_Bonferroni | Tier |
+|------|----------:|-------------:|------|
+| pubg          | +24.1% | 1.1e-63   | 1 (aligned) |
+| nba           | +42.6% | 5.2e-112  | 1 (aligned) |
+| csgo          | +32.9% | 9.2e-87   | 2 (partial-observability) |
+| rocket_league | +5.9%  | 4.9e-16   | 3 (misaligned) |
+| poker         | -0.1%  | 1.000     | 0 (saturated/ceiling) |
+
+**Reference experiments:** v3 (Chess/Checkers), v4 (single-cell methodology characterization). v5.1 = cross-model replication via OpenRouter, scoped separately.
 
 ---
 
@@ -57,11 +68,13 @@ python run_pilot.py --output RESULTS/pilot_report.json
 
 | File | Purpose |
 |------|---------|
-| `BUILD_PLAN.md` | Sequenced build plan with dependency graph (written before any code) |
-| `SPEC.md` | Draft specification — **8 [REQUIRES SIGN-OFF] questions** block T implementation |
-| `DECISION_LOG.md` | Every non-pre-specified decision logged with default/alternative/reversibility |
-| `STATUS.md` | End-of-build summary |
+| `STATUS.md` | End-state status (Phase D closed 2026-04-30, results locked) |
+| `MEMO.md` | Internal closeout memo + bridge document for the eventual V1–V5.1 arXiv preprint |
+| `DECISION_LOG.md` | D-0 → D-45, every methodology decision with default/alternative/reversibility |
+| `SPEC.md` | Pre-registered specification (signed 2026-04-27, 7 amendments adopted) |
+| `BUILD_PLAN.md` | Sequenced build plan with dependency graph |
 | `docs/REAL_DATA_GUIDE.md` | How to set up credentials and run real-data acquisition |
+| `docs/STATUS_BUILD_DAY_2026-04-27.md` | Original end-of-build-day status (preserved for history) |
 
 ---
 
@@ -100,38 +113,41 @@ python run_pilot.py --output RESULTS/pilot_report.json
 
 ---
 
-## What's Implemented vs Stubbed
+## What's Implemented
 
-### Implemented
-- All five data acquisition pipelines (real-fetch + mock fallback)
-- All five domain event extractors
-- Statistical harness: McNemar (continuity correction, Bonferroni, bootstrap CI), scoring, variance, cell runner
-- ACTIONABLE_TYPES whitelist (v1.1: ResourceBudget added, phase_ prefix stripped)
-- ChainBuilder: fixed per-cell chain lengths, non-overlapping windows, CF-3=A shuffle controls
-- CF-3=A leakage diagnosis: quantified leakage ratio with direction check
-- MDE and post-hoc power surfaced in all evaluation reports
-- Pilot validation harness with MockT + NoisyMockT
-- Phase D evaluation entry point (`run_eval.py`) with dry-run mode
-- Test suite: 401 tests covering harness, pilot, cells, and CLI integration
+- All five data acquisition pipelines (real-fetch + mock fallback) — pubg, nba, csgo, rocket_league, poker
+- All five domain event extractors with derived-state markers (per D-43)
+- All five Translation Functions T (`src/interfaces/translation.py`)
+- Per-cell PromptBuilder + `_MarkerSurfacing` for chain rendering (per A4–A6)
+- Per-cell violation injectors (`src/harness/violation_injector.py`) for the violation-detection diagnostic (D-42)
+- Statistical harness: McNemar (continuity correction or exact binomial when n_disc<25), Bonferroni, bootstrap CI
+- Anthropic Batches API caller with positional custom_id integrity (`src/harness/model_evaluator.py`)
+- Phase D entry point (`run_diagnostic_violations.py`) with strict-grounding (D-44 Layer 1)
+- Layer-2 CoT FP diagnostic (`run_phase_d_cot.py`)
+- Phase D synthesis pipeline (`synthesize_phase_d.py`)
+- Raw batch archival (`archive_phase_d_batches.py` → `RESULTS/phase_d_raw_batches/`, 23,998 records committed)
+- Test suite: 415 tests passing (9 pre-existing failures in Fortnite + CSGO mock tests, tracked in [#5](https://github.com/safiqsindha/Ditto-V5/issues/5) — unrelated to v5 results)
 
-### Stubbed (Out of Scope Until SPEC Sign-Off)
-- All five Translation Functions T (raise `NotImplementedError`)
-- All evaluation runs against the real Haiku API
+## Reproducing the Headline Numbers
+
+```bash
+.venv/bin/python synthesize_phase_d.py
+# -> RESULTS/phase_d_final.json + console table
+
+# Layer-2 CoT diagnostic on residual NBA + CSGO FPs:
+.venv/bin/python run_phase_d_cot.py --cells nba csgo
+```
+
+If 60-day Anthropic batch retention has expired, the raw responses are archived locally at `RESULTS/phase_d_raw_batches/*.jsonl` — modify `fetch_batch` in `retrieve_phase_d_partial.py` to read those files instead of hitting the API.
 
 ---
 
-## Pre-Registration Sign-Off Blockers
+## What's Deferred to v5.1+ / v6
 
-Before T can be implemented or evaluation runs can begin, both authors must answer the eight questions in `SPEC.md`:
-
-1. Baseline/intervention prompt structure
-2. Bonferroni divisor (5 vs 1 vs mixed)
-3. Sample size adequacy (n=1,200/cell)
-4. Chain length consistency (fixed vs variable)
-5. CS:GO granularity (round-level vs tick-sampled vs clutch-level)
-6. NBA granularity (possession vs play-level)
-7. Rocket League state handling (hit-level vs possession vs boost-enriched)
-8. Poker granularity (per-action vs per-hand vs street-level)
+- **v5.1 cross-model replication via OpenRouter** — frozen Phase D prompts replayed across Anthropic / OpenAI / Google / open-weights models with a derived-state-marker ablation as a second axis. Pre-registered design in `MEMO.md` §6.
+- **v5.2 CSGO awpy fix** — adds bomb-site observability via parsed CS2 demos. Run *after* cross-model so capability vs. observability can be cleanly separated.
+- **v5.2 Rocket League per-event extraction** — carball / boxcars-py replay parsing. Same deferral logic as CSGO.
+- **v6 chain-length sweep, reasoning-mode toggles** — open candidates.
 
 ---
 
