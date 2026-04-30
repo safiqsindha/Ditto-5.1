@@ -247,7 +247,26 @@ class ModelEvaluator:
         )
 
         while True:
-            batch = self._client.messages.batches.retrieve(batch_id)
+            # Anthropic create→retrieve has eventual consistency. The first
+            # retrieve immediately after create occasionally 404s — retry a
+            # few times with backoff before giving up.
+            batch = None
+            last_err = None
+            for attempt in range(5):
+                try:
+                    batch = self._client.messages.batches.retrieve(batch_id)
+                    break
+                except Exception as e:
+                    last_err = e
+                    # 404 NotFoundError from anthropic SDK is the typical case.
+                    if "not_found" in str(e).lower() or "404" in str(e):
+                        time.sleep(2 ** attempt)  # 1, 2, 4, 8, 16
+                        continue
+                    raise
+            if batch is None:
+                raise RuntimeError(
+                    f"[{cell}] Could not retrieve batch {batch_id} after retries: {last_err}"
+                )
             counts = batch.request_counts
             logger.info(
                 f"[{cell}] batch {batch_id[:12]} status={batch.processing_status} "

@@ -132,15 +132,17 @@ def inject_nba_foul_violation(chain: ChainCandidate) -> InjectionResult | None:
 
 def inject_pubg_elimination_violation(chain: ChainCandidate) -> InjectionResult | None:
     """
-    Plant: an actor is killed (appears as victim of an engage_decision) and
-    then generates a subsequent action.
+    Plant: a player is eliminated and then generates a subsequent action.
+    Locally verifiable: every event after the elimination shows the marker
+    `eliminated_player=<actor>` directly in the rendered chain, so the
+    model can check per-event without cross-event memory.
 
-    Strategy: identify the actor of the FINAL event. Insert (or modify) an
-    earlier event so it shows the target actor being eliminated. Specifically,
-    we mutate an early event's location_context to say
-    `victim=<target_actor> eliminated_by=...` so the rendering shows that
-    target_actor was eliminated. Then the final event has them still acting,
-    which violates "An eliminated player cannot act."
+    Strategy: pick the final event's actor as the target. Mutate ALL events
+    AFTER the first to include `eliminated_player=<target>` and
+    `eliminated_at_event=0` markers in their location_context. The
+    PUBGPromptBuilder.format_event override (added 2026-04-29 alongside
+    A4-A7) surfaces this marker explicitly so the 6-key context cap doesn't
+    drop it.
     """
     if len(chain.events) < 2:
         return None
@@ -148,16 +150,19 @@ def inject_pubg_elimination_violation(chain: ChainCandidate) -> InjectionResult 
     events = [_clone(e) for e in chain.events]
     target_actor = events[-1].actor
 
-    # Modify the FIRST event to record the target actor as eliminated.
+    # Mark the FIRST event as the elimination event.
     first = events[0]
     first.location_context = dict(first.location_context or {})
-    first.location_context["eliminated_player"] = target_actor
-    first.location_context["elimination_note"] = (
-        f"{target_actor} was eliminated"
-    )
-    # Tag the event_type with a clear violation marker the renderer surfaces.
-    if first.event_type != "engage_decision":
-        first.event_type = "engage_decision"
+    first.location_context["eliminates_player"] = target_actor
+    first.event_type = "engage_decision"
+
+    # Mark every SUBSEQUENT event with the elimination memory so the renderer
+    # surfaces it locally. This is the local-violation pattern: the model
+    # doesn't have to remember event 0; the marker is on every event.
+    for i, ev in enumerate(events[1:], start=1):
+        ev.location_context = dict(ev.location_context or {})
+        ev.location_context["already_eliminated_player"] = target_actor
+        ev.location_context["eliminated_at_event"] = 0
 
     new_chain = ChainCandidate(
         chain_id=chain.chain_id + "_adv",
@@ -171,22 +176,152 @@ def inject_pubg_elimination_violation(chain: ChainCandidate) -> InjectionResult 
         chain=new_chain, cell="pubg",
         violation_clause="An eliminated player cannot act",
         violation_description=(
-            f"Actor {target_actor} is recorded as eliminated at event 0 but "
-            f"continues to act at event {len(events)-1}"
+            f"Actor {target_actor} eliminated at event 0 but continues to "
+            f"act at later events; marker visible per-event"
         ),
         target_actor=target_actor,
         target_event_idx=len(events) - 1,
     )
 
 
+def inject_poker_overbet_violation(chain: ChainCandidate) -> InjectionResult | None:
+    """
+    PER-EVENT poker violation anchored to a STATED constraint clause.
+    The locked Poker constraint says: "Cannot wager more than held."
+    Plant a single event where bet_size_bb > stack_bb — the model can
+    detect the violation by reading ONE event line; no cross-event
+    memory or aggregation required.
+
+    Strategy: find an event with a non-trivial stack_bb. Set
+    bet_size_bb = stack_bb * 2 (clearly larger than held). Both fields
+    are rendered per-event in PokerPromptBuilder.format_event, so the
+    violation is fully visible on a single line.
+
+    This replaces inject_poker_stack_arithmetic_violation, which v2
+    diagnostic showed at 45% detection — the stack-monotonicity rule
+    was NOT in the constraint context, so the model had no anchor to
+    flag it.
+    """
+    if len(chain.events) < 2:
+        return None
+
+    events = [_clone(e) for e in chain.events]
+
+    # Find an event with a usable stack_bb. Default to mid-chain.
+    target_idx = len(events) // 2
+    for i, ev in enumerate(events):
+        ctx = ev.location_context or {}
+        try:
+            stack = float(ctx.get("stack_bb", 0))
+        except (TypeError, ValueError):
+            continue
+        if stack > 5:
+            target_idx = i
+            break
+
+    target = events[target_idx]
+    target.location_context = dict(target.location_context or {})
+    try:
+        stack_val = float(target.location_context.get("stack_bb", 50.0))
+    except (TypeError, ValueError):
+        stack_val = 50.0
+    overbet = round(stack_val * 2.0 + 10.0, 1)
+    target.location_context["bet_size_bb"] = overbet
+    target.location_context["action"] = "cbr"
+    target.event_type = "engage_decision"
+
+    new_chain = ChainCandidate(
+        chain_id=chain.chain_id + "_adv",
+        game_id=chain.game_id,
+        cell=chain.cell,
+        events=events,
+        chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                        "violation_clause": "wager_exceeds_stack"},
+    )
+    return InjectionResult(
+        chain=new_chain, cell="poker",
+        violation_clause="Cannot wager more than held",
+        violation_description=(
+            f"Event {target_idx}: bet_size_bb={overbet} but stack_bb="
+            f"{stack_val} (cannot wager more than held)"
+        ),
+        target_actor=target.actor,
+        target_event_idx=target_idx,
+    )
+
+
+def inject_poker_stack_arithmetic_violation(chain: ChainCandidate) -> InjectionResult | None:
+    """
+    LEGACY — see inject_poker_overbet_violation. Diagnostic v2 showed this
+    detected at only 45% because the stack-monotonicity rule isn't in the
+    locked constraint context. Kept for reference only.
+    """
+    if len(chain.events) < 3:
+        return None
+
+    events = [_clone(e) for e in chain.events]
+
+    # Find an actor with at least 2 events in the chain.
+    actor_first_idx: dict[str, int] = {}
+    actor_last_idx: dict[str, int] = {}
+    for i, ev in enumerate(events):
+        if ev.actor not in actor_first_idx:
+            actor_first_idx[ev.actor] = i
+        actor_last_idx[ev.actor] = i
+
+    candidates = [
+        a for a, last in actor_last_idx.items()
+        if actor_first_idx[a] != last
+    ]
+    if not candidates:
+        return None
+
+    target_actor = candidates[0]
+    earlier_idx = actor_first_idx[target_actor]
+    later_idx = actor_last_idx[target_actor]
+
+    earlier_stack = (events[earlier_idx].location_context or {}).get("stack_bb", 100.0)
+    try:
+        earlier_stack_f = float(earlier_stack)
+    except (TypeError, ValueError):
+        earlier_stack_f = 100.0
+
+    # Force the later event's stack to be HIGHER than the earlier — impossible
+    # within a single hand without a hand-end win event in between.
+    later = events[later_idx]
+    later.location_context = dict(later.location_context or {})
+    later.location_context["stack_bb"] = round(earlier_stack_f + 50.0, 1)
+
+    new_chain = ChainCandidate(
+        chain_id=chain.chain_id + "_adv",
+        game_id=chain.game_id,
+        cell=chain.cell,
+        events=events,
+        chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                        "violation_clause": "stack_arithmetic"},
+    )
+    return InjectionResult(
+        chain=new_chain, cell="poker",
+        violation_clause="Stacks can only decrease within a hand",
+        violation_description=(
+            f"Actor {target_actor} stack at event {earlier_idx} = "
+            f"{earlier_stack_f:.1f}bb, at event {later_idx} = "
+            f"{earlier_stack_f + 50.0:.1f}bb (impossible mid-hand)"
+        ),
+        target_actor=target_actor,
+        target_event_idx=later_idx,
+    )
+
+
 def inject_poker_fold_violation(chain: ChainCandidate) -> InjectionResult | None:
     """
+    GLOBAL (cross-event-state-tracking) violation kept for comparison with
+    the local stack-arithmetic injector. Diagnostic v1 showed Haiku catches
+    only ~50% of these because the model has to remember an earlier fold
+    to detect a later bet by the same actor.
+
     Plant: a player folds (action='f') and then bets/raises later in the
     same hand. Violates "A folded player cannot act again."
-
-    Strategy: pick an actor who appears BOTH early and late in the chain.
-    Modify their EARLY event so location_context shows action='f' (fold).
-    Leave their later event as-is (showing them taking a non-fold action).
     """
     if len(chain.events) < 3:
         return None
@@ -247,15 +382,99 @@ def inject_poker_fold_violation(chain: ChainCandidate) -> InjectionResult | None
     )
 
 
+def inject_csgo_team_flip_violation(chain: ChainCandidate) -> InjectionResult | None:
+    """
+    LOCALLY-VERIFIABLE CS:GO violation within the FACEIT aggregate-stat data
+    ceiling. The constraint context implies team integrity ("T wins by ...
+    eliminating CTs", "CT wins by ..."). Plant a team-membership flip: have
+    the SAME actor appear with two different team labels in the chain.
+
+    Each event renders team=team_A or team=team_B (CF-4=B anonymized via
+    md5 hash of the underlying team_id). If the same actor is seen on
+    BOTH team_A and team_B within one chain, that violates implicit team
+    integrity. Locally checkable: per-event (actor, team) pair tracked.
+
+    Note: this is the cleanest local violation we can construct from
+    FACEIT aggregate stats. A v5.1 with awpy demo extraction would unlock
+    bomb-site violations, alive/dead state, and other directly-stated
+    constraint clauses.
+    """
+    if len(chain.events) < 3:
+        return None
+    events = [_clone(e) for e in chain.events]
+
+    # Find an actor that appears at least twice
+    actor_indices: dict[str, list[int]] = {}
+    for i, ev in enumerate(events):
+        actor_indices.setdefault(ev.actor, []).append(i)
+    candidates = [a for a, idxs in actor_indices.items() if len(idxs) >= 2]
+    if not candidates:
+        # Fall back: just plant team_C on a single event
+        target = events[-1]
+        target.location_context = dict(target.location_context or {})
+        target.location_context["team_id"] = "team_INVALID"
+        new_chain = ChainCandidate(
+            chain_id=chain.chain_id + "_adv",
+            game_id=chain.game_id,
+            cell=chain.cell,
+            events=events,
+            chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                            "violation_clause": "invalid_team_id"},
+        )
+        return InjectionResult(
+            chain=new_chain, cell="csgo",
+            violation_clause="Players belong to T or CT (not a third team)",
+            violation_description=(
+                f"Event {len(events)-1} has team='team_INVALID' "
+                f"(not T or CT)"
+            ),
+            target_actor=target.actor,
+            target_event_idx=len(events) - 1,
+        )
+
+    target_actor = candidates[0]
+    indices = actor_indices[target_actor]
+
+    # Get this actor's current team from their first event.
+    first_idx = indices[0]
+    first_team = (events[first_idx].location_context or {}).get("team_id", "")
+
+    # Flip the LAST occurrence to a different team_id (and the renderer's
+    # md5 hash will assign it to the opposite team_A/team_B slot).
+    flip_idx = indices[-1]
+    flip = events[flip_idx]
+    flip.location_context = dict(flip.location_context or {})
+    # Use a synthetic team_id that hashes to the OPPOSITE slot. We don't
+    # know which slot first_team mapped to, so just append "_FLIPPED" — the
+    # renderer's hash will deterministically produce a different slot most
+    # of the time.
+    flip.location_context["team_id"] = first_team + "_FLIPPED"
+
+    new_chain = ChainCandidate(
+        chain_id=chain.chain_id + "_adv",
+        game_id=chain.game_id,
+        cell=chain.cell,
+        events=events,
+        chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                        "violation_clause": "team_membership_flip"},
+    )
+    return InjectionResult(
+        chain=new_chain, cell="csgo",
+        violation_clause="Player belongs to a single team (T or CT) for the match",
+        violation_description=(
+            f"Actor {target_actor} appears with mismatched team_ids in "
+            f"events {first_idx} and {flip_idx}"
+        ),
+        target_actor=target_actor,
+        target_event_idx=flip_idx,
+    )
+
+
 def inject_csgo_round_violation(chain: ChainCandidate) -> InjectionResult | None:
     """
-    Plant: a kill event tagged with a round number that exceeds the total
-    rounds in the match (e.g., round=99 in a 30-round game). Violates the
-    implied "events occur within the round structure of the match."
-
-    Note: this is a weaker violation than NBA/PUBG/Poker because the
-    constraint context doesn't explicitly state "events must occur within
-    valid round numbers." Included for completeness.
+    LEGACY round-out-of-bounds injector. Constraint context doesn't mention
+    round bounds, so this is a weak violation. Kept for reference only —
+    v2 dispatch uses inject_csgo_team_flip_violation.
     """
     if not chain.events:
         return None
@@ -282,11 +501,74 @@ def inject_csgo_round_violation(chain: ChainCandidate) -> InjectionResult | None
     )
 
 
+def inject_rocket_league_team_size_violation(chain: ChainCandidate) -> InjectionResult | None:
+    """
+    LOCALLY-VERIFIABLE Rocket League violation. Constraint says "Teams of 3
+    score by hitting the ball". Inject a 4th player on the same team_color
+    as an existing actor. Every event in the chain renders team={blue|orange}
+    so the model can locally count distinct actors per team.
+
+    Strategy: identify existing actors and their teams. Pick the team with
+    fewer unique actors. Replace the actor on a chosen event with a fake
+    fourth-player ID assigned to that team. Now the chain shows 4 distinct
+    actors on the same team, violating "teams of 3".
+    """
+    if len(chain.events) < 4:
+        return None
+
+    events = [_clone(e) for e in chain.events]
+
+    # Catalogue (team_color -> set of unique actors).
+    team_actors: dict[str, set] = {"blue": set(), "orange": set()}
+    for ev in events:
+        team = (ev.location_context or {}).get("team_color") or ev.actor_team
+        if team in team_actors:
+            team_actors[team].add(ev.actor)
+        elif team:
+            team_actors.setdefault(team, set()).add(ev.actor)
+
+    # Pick the team with the most unique actors so we just need to add 1.
+    target_team = max(team_actors, key=lambda t: len(team_actors[t]))
+    if len(team_actors[target_team]) < 1:
+        return None
+
+    fake_actor = f"injected_{target_team}_4th"
+
+    # Replace one mid-chain event's actor with the fake 4th-player so
+    # the team now has 4 unique actors visible in the rendered chain.
+    middle_idx = len(events) // 2
+    target_event = events[middle_idx]
+    target_event.actor = fake_actor
+    target_event.actor_team = target_team
+    target_event.location_context = dict(target_event.location_context or {})
+    target_event.location_context["team_color"] = target_team
+
+    new_chain = ChainCandidate(
+        chain_id=chain.chain_id + "_adv",
+        game_id=chain.game_id,
+        cell=chain.cell,
+        events=events,
+        chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                        "violation_clause": "team_size_exceeds_3"},
+    )
+    return InjectionResult(
+        chain=new_chain, cell="rocket_league",
+        violation_clause="Teams of 3 score by hitting the ball",
+        violation_description=(
+            f"Team '{target_team}' now shows 4 unique actors in the chain "
+            f"(violates teams-of-3); injected actor '{fake_actor}' at "
+            f"event {middle_idx}"
+        ),
+        target_actor=fake_actor,
+        target_event_idx=middle_idx,
+    )
+
+
 def inject_rocket_league_demolished_violation(chain: ChainCandidate) -> InjectionResult | None:
     """
-    Plant: a player gets demolished and then takes an action immediately
-    after (RL respawns are 3 seconds, but adjacent events are typically
-    less than that). Approximates "demolished player cannot act for ~3s."
+    LEGACY: demolished-player-acts violation. Diagnostic v1 didn't reach RL,
+    but this rule isn't in the locked constraint context, so the model has
+    no anchor to detect it. Kept for reference only — not used in v2 dispatch.
     """
     if len(chain.events) < 2:
         return None
@@ -294,7 +576,6 @@ def inject_rocket_league_demolished_violation(chain: ChainCandidate) -> Injectio
     final = events[-1]
     target_actor = final.actor
 
-    # Mutate the second-to-last event to record target as demolished.
     bump = events[-2]
     bump.event_type = "risk_accept"
     bump.location_context = dict(bump.location_context or {})
@@ -321,13 +602,23 @@ def inject_rocket_league_demolished_violation(chain: ChainCandidate) -> Injectio
     )
 
 
-# Per-cell dispatch
+# Per-cell dispatch — v2 uses LOCALLY-VERIFIABLE injectors per the local-vs-
+# global insight from diagnostic v1 (NBA local works at 95-100%; Poker
+# global fails at 45-55%). v2 swaps Poker, RL, CS:GO injectors to local
+# variants. NBA stayed on its v1 injector because it was already local.
 INJECTORS = {
-    "nba": inject_nba_foul_violation,
-    "pubg": inject_pubg_elimination_violation,
+    "nba": inject_nba_foul_violation,                      # per-event, anchored to "6 fouls = ejection" — PASSES at 95-100%
+    "pubg": inject_pubg_elimination_violation,             # per-event, anchored to "eliminated cannot act" — PASSES at 100%
+    "poker": inject_poker_overbet_violation,               # per-event, anchored to "Cannot wager more than held" — v3 (was stack_arithmetic which wasn't anchored)
+    "csgo": inject_csgo_team_flip_violation,               # local but timestamp confound
+    "rocket_league": inject_rocket_league_team_size_violation,  # multi-event aggregation — fails on Haiku
+}
+
+# Legacy global injectors for comparison studies
+LEGACY_GLOBAL_INJECTORS = {
     "poker": inject_poker_fold_violation,
-    "csgo": inject_csgo_round_violation,
     "rocket_league": inject_rocket_league_demolished_violation,
+    "csgo": inject_csgo_round_violation,
 }
 
 

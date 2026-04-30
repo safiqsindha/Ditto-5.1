@@ -904,3 +904,55 @@ This is not a rendering bug; it's a chain-unit definition that doesn't fit the e
 **Re-pilot success criterion for poker:** under A7, expect ~3,000 hands with ≥3 actions = ~3,000 chains pre-Gate-2. If <500 chains generated, the per-hand floor is too aggressive and we move to "hand with ≥2 player actions".
 
 ---
+
+## Decision D-42: Diagnostic finding — 4-tier hierarchy of LLM constraint reasoning
+
+**Date:** 2026-04-29
+
+**Context:** The pre-Phase-D pilot showed Haiku produced 0% YES rate on 4 of 5 cells under the original "is this consistent with the rules" framing. Four independent reviewers (Gemini, ChatGPT, Opus #1, Opus #2) converged on the diagnosis that this was a *floor effect* — the model was rejecting under uncertainty, not engaging with the constraint context. We ran three diagnostic experiments using a violation-detection framing instead:
+
+- **v1**: planted blatant violations on NBA + Poker, asked "Does this contain any rule violation?"
+- **v2**: applied locally-verifiable injectors to PUBG, Poker, CS:GO, RL (per Opus #1's local-vs-global insight)
+- **v3**: refined Poker to use a constraint-anchored, per-event injection (`bet_size_bb > stack_bb`)
+
+Total diagnostic spend: ~$0.40.
+
+**Empirical finding — 4-tier hierarchy of constraint-reasoning recoverability:**
+
+| Tier | Pattern | Cells | Detection |
+|------|---------|-------|-----------|
+| **1** | Anchored to stated rule + per-event + **simple** field-vs-threshold check | NBA (foul=7), PUBG (elim-marker) | **95–100%** |
+| **2** | Anchored + per-event + **arithmetic** comparison of 2+ fields on the same line | Poker (`bet > stack`) | **55–65%** |
+| **3** | Anchored + multi-event aggregation across the chain | RL (count actors per team) | **~25%** |
+| **4** | Not anchored to a stated rule (rule must be derived from pretrained knowledge) | Poker stack-arithmetic v2 | **~chance (45%)** |
+
+**Confounded by data fidelity:** CS:GO's synthetic FACEIT-aggregate timestamps (all events stamped to round-start t=115.5s) produce 95% false-positive rate even on clean chains. The model detects something IS wrong with every CS:GO chain but it's the timestamp artifact, not the planted violation. CS:GO can't give a clean signal until v5.1 awpy demo extraction.
+
+**Implications for the v5 SPEC:**
+
+The original SPEC hypothesis ("constraint context helps Haiku recognize rule-consistent chains across 5 game domains") is **not the right hypothesis** for this task. The pilot's 0% floor was an artifact of the consistency-rating framing, not evidence against constraint reasoning. Haiku CAN reason about constraints — but only when the violation is anchored to a stated rule AND the check fits in a single event line OR a simple cross-event match.
+
+The publishable claim is now richer than the original hypothesis:
+1. **Floor-effect characterization** of the consistency-rating instrument for short abstract chains
+2. **Tier-1 demonstration** that Haiku exercises constraint reasoning when the violation pattern matches its decoder's natural attention budget (per-event field-vs-threshold)
+3. **Tier-2 degradation** on arithmetic comparisons across same-event fields
+4. **Tier-3 failure** on multi-event aggregation (counting, sequence dependencies)
+5. **Tier-4 absence** when the rule isn't explicitly in the prompt (model doesn't apply implicit knowledge)
+
+**Recommended Phase D structure:**
+- **PUBG + NBA at n=1,200** under violation-detection design (both Tier-1, ~$2)
+- **Poker at n=1,200** with overbet injector documented as Tier-2 (~$1)
+- **RL** documented as Tier-3 limitation; not run at scale (multi-event aggregation isn't recoverable at the prompt-engineering level)
+- **CS:GO** deferred to v5.1 with awpy demo extraction (data ceiling)
+
+**Code impact:**
+- `src/harness/violation_injector.py`: new dispatch with 4 active per-cell injectors + 3 legacy variants kept for comparison.
+- `src/harness/prompts.py`: `PUBGPromptBuilder.format_event` override surfaces ELIMINATES/already_eliminated markers explicitly (was being truncated by 6-key cap).
+- `src/harness/model_evaluator.py`: retry-with-backoff on batch retrieve to handle Anthropic API create-then-retrieve consistency lag.
+- `run_diagnostic_violations.py`: violation-detection diagnostic entry point.
+
+**Reversibility:** Trivial — all diagnostic infrastructure is additive. The original Phase D entry point (`run_eval.py`) is unchanged.
+
+**Methodology note:** This is the strongest example in the v3-v5 program of pre-registration discipline catching an instrument problem. Without the small pilot + reviewer rounds + diagnostic, we would have spent the full $80-110 Phase D and produced a 4-of-5-cells-flat result whose interpretation would have been ambiguous between "model can't reason" and "instrument can't measure." We now know it was the instrument.
+
+---

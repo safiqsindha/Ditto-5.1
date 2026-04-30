@@ -217,7 +217,14 @@ class FortnitePromptBuilder(PromptBuilder):
 
 class PUBGPromptBuilder(PromptBuilder):
     """Per A2 (D-35), replaces FortnitePromptBuilder in active evaluation.
-    Wording locked in T-design review (2026-04-28)."""
+    Wording locked in T-design review (2026-04-28).
+
+    2026-04-29: format_event override added so elimination markers planted
+    by the violation injector survive the default 6-key context cap. The
+    override surfaces `eliminates_player` and `already_eliminated_player`
+    explicitly when present so violation-detection diagnostics work on
+    PUBG chains (the original chain renderer was dropping these markers).
+    """
 
     def __init__(self):
         super().__init__(cell="pubg")
@@ -231,6 +238,51 @@ class PUBGPromptBuilder(PromptBuilder):
 
     def format_question(self, chain: ChainCandidate) -> str:
         return _CLASSIFY_QUESTION.format(domain="PUBG")
+
+    def format_event(self, event: GameEvent, idx: int, actor_map: dict | None = None) -> str:
+        anon = actor_map.get(event.actor, "Player_?") if actor_map else "Player_?"
+        ctx = event.location_context or {}
+
+        # Always-surface keys for PUBG: zone state + violation markers.
+        # If violation markers are present, render them explicitly so the
+        # 6-key context cap doesn't drop them.
+        prefix_parts: list[str] = []
+        eliminates = ctx.get("eliminates_player")
+        if eliminates:
+            anon_target = (
+                actor_map.get(eliminates, eliminates) if actor_map else eliminates
+            )
+            prefix_parts.append(f"ELIMINATES={anon_target}")
+        already_elim = ctx.get("already_eliminated_player")
+        if already_elim:
+            anon_already = (
+                actor_map.get(already_elim, already_elim)
+                if actor_map else already_elim
+            )
+            prefix_parts.append(f"NOTE={anon_already}_already_eliminated")
+        zone_radius = ctx.get("safety_zone_radius")
+        if zone_radius is not None:
+            prefix_parts.append(f"zone_radius={zone_radius}")
+
+        # Drop violation marker keys from the rest of the summary so they
+        # don't appear twice + don't crowd out other zone/weapon fields.
+        remaining = {
+            k: v for k, v in ctx.items()
+            if k not in {"eliminates_player", "already_eliminated_player",
+                         "eliminated_at_event", "safety_zone_radius"}
+        }
+        ctx_summary = self._summarize_context(remaining)
+        prefix_str = " ".join(prefix_parts)
+        if prefix_str and ctx_summary:
+            ctx_str = f"{prefix_str}, {ctx_summary}"
+        else:
+            ctx_str = prefix_str or ctx_summary
+
+        return (
+            f"{idx:>3}. t={event.timestamp:>7.1f}s | "
+            f"{event.event_type:<22} | actor={anon:<12} "
+            f"| {ctx_str}"
+        )
 
 
 class NBAPromptBuilder(PromptBuilder):
