@@ -173,22 +173,38 @@ class ModelEvaluator:
         self._ensure_client()
         cell = prompt_pairs[0].cell if prompt_pairs else "?"
 
-        # Build requests: 2 per chain, custom_id encodes chain_id + variant.
+        # Build requests: 2 per chain, custom_id encodes positional index +
+        # chain_id + variant.
+        #
+        # The positional index is critical: at n=1200 some cells produce
+        # PromptPair lists with duplicate chain_ids (e.g., poker hands sharing
+        # a chain_id namespace after deduplication shifts; or any future bug
+        # that lets two pairs share a chain_id). The Anthropic Batches API
+        # rejects the entire batch with a 400 if ANY two custom_ids collide.
+        # Prefixing with the zero-padded position guarantees uniqueness within
+        # the request list while still being parseable on the way back.
         requests = []
-        for pair in prompt_pairs:
+        for idx, pair in enumerate(prompt_pairs):
             requests.append(self._make_batch_request(
-                custom_id=f"{pair.chain_id}__baseline",
+                custom_id=f"{idx:06d}__{pair.chain_id}__baseline",
                 prompt=pair.baseline_prompt,
             ))
             requests.append(self._make_batch_request(
-                custom_id=f"{pair.chain_id}__intervention",
+                custom_id=f"{idx:06d}__{pair.chain_id}__intervention",
                 prompt=pair.intervention_prompt,
             ))
 
+        n_unique_chain_ids = len({p.chain_id for p in prompt_pairs})
         logger.info(
-            f"[{cell}] Batch mode: {len(prompt_pairs)} chains -> "
-            f"{len(requests)} requests"
+            f"[{cell}] Batch mode: {len(prompt_pairs)} chains "
+            f"({n_unique_chain_ids} unique chain_ids) -> {len(requests)} requests"
         )
+        if n_unique_chain_ids < len(prompt_pairs):
+            logger.warning(
+                f"[{cell}] {len(prompt_pairs) - n_unique_chain_ids} duplicate "
+                f"chain_ids detected; positional prefix will be used to keep "
+                f"custom_ids unique"
+            )
 
         # Submit and collect results across chunks.
         results_by_custom_id: dict[str, str] = {}
@@ -197,12 +213,16 @@ class ModelEvaluator:
             chunk_results = self._submit_and_wait_batch(chunk, cell=cell)
             results_by_custom_id.update(chunk_results)
 
-        # Re-pair by chain_id and parse.
+        # Re-pair by (positional index, chain_id) and parse.
         results: list[EvaluationResult] = []
         missing: list[str] = []
-        for pair in prompt_pairs:
-            b_raw = results_by_custom_id.get(f"{pair.chain_id}__baseline", "")
-            i_raw = results_by_custom_id.get(f"{pair.chain_id}__intervention", "")
+        for idx, pair in enumerate(prompt_pairs):
+            b_raw = results_by_custom_id.get(
+                f"{idx:06d}__{pair.chain_id}__baseline", ""
+            )
+            i_raw = results_by_custom_id.get(
+                f"{idx:06d}__{pair.chain_id}__intervention", ""
+            )
             if not b_raw and not i_raw:
                 missing.append(pair.chain_id)
             results.append(EvaluationResult(
