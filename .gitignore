@@ -7,9 +7,17 @@ __pycache__/
 dist/
 build/
 .env
+.env.save
 .venv/
 *.log
 .DS_Store
+.claude/
+
+# Legacy fortnite scratch scripts (replaced by PUBG per A2; kept locally for
+# context but not committed since they're not on the active code path).
+scripts/fortnite_smoke_test.py
+scripts/fetch_fortnite_match_ids.py
+scripts/inspect_fortnite_*.py
 
 # Generated event streams — regenerable from pipelines.run() with mock data
 # or from real data acquisition with credentials. Not committed to keep repo
