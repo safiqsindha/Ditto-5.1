@@ -35,6 +35,10 @@ data/events/**/*
 # Pilot result outputs
 RESULTS/*.json
 
+# Archived pre-Phase-D iteration outputs (moved out of top-level RESULTS/
+# during 2026-04-30 cleanup; kept locally for context but not committed)
+RESULTS/_archive_pre_phase_d/
+
 # Coverage
 .coverage
 coverage.xml
