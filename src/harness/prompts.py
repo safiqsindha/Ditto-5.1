@@ -289,9 +289,15 @@ class NBAPromptBuilder(PromptBuilder):
     """N-5 constraint context. Wording locked in T-design review (2026-04-28).
 
     A4 (2026-04-29): format_event overridden to surface terminal_action,
-    actor_foul_count_after, and possession_elapsed_s — the variables the
+    actor_foul_count_after, and time_in_possession_s — the variables the
     locked constraint context (24-sec shot clock, 6-foul ejection,
     possession-change rule) refers to.
+
+    2026-04-29 (D-44 prep): renamed `possession_elapsed_s` to
+    `time_in_possession_s`. The old name was ambiguous and contributed to
+    the single NBA FP under strict grounding — CoT showed the model misread
+    elapsed=14.8 as a shot-clock violation. The new name unambiguously
+    indicates "seconds into the possession when the action occurred."
     """
 
     def __init__(self):
@@ -315,14 +321,15 @@ class NBAPromptBuilder(PromptBuilder):
         # (e.g. mock data path).
         terminal = ctx.get("terminal_action") or "?"
         foul = ctx.get("actor_foul_count_after")
-        elapsed = ctx.get("possession_elapsed_s")
+        # Field renamed 2026-04-29 (D-44 prep) — see class docstring.
+        elapsed = ctx.get("time_in_possession_s") or ctx.get("possession_elapsed_s")
         period = ctx.get("period", "?")
         clock = ctx.get("clock_end") or ctx.get("clock_start") or ""
         score = f"{ctx.get('score_home','?')}-{ctx.get('score_away','?')}"
 
         parts = [f"action={terminal}"]
         if elapsed is not None:
-            parts.append(f"possession_elapsed_s={elapsed}")
+            parts.append(f"time_in_possession_s={elapsed}")
         if foul is not None:
             parts.append(f"actor_total_fouls={foul}")
         parts.append(f"period={period}")

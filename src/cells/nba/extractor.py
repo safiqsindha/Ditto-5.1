@@ -209,7 +209,14 @@ class NBAExtractor:
                 "score_away": terminal.get("score_away", ""),
                 "terminal_action": terminal["actiontype"],
                 # A4 fields:
-                "possession_elapsed_s": round(possession_elapsed_s, 1),
+                # Renamed from `possession_elapsed_s` 2026-04-29 (D-44 prep): the
+                # original name was ambiguous — model misread "elapsed" as
+                # "duration so far in this possession" leading to the single
+                # NBA FP under strict grounding (CoT cited 24-second rule on
+                # an event with elapsed=14.8, well under threshold). The new
+                # name explicitly states "seconds into possession when this
+                # action was taken" — directly comparable to the 24s shot-clock.
+                "time_in_possession_s": round(possession_elapsed_s, 1),
                 "actor_foul_count_after": terminal_actor_foul_count,
             },
             raw_data_blob={"plays": [p["raw"] for p in plays]},
