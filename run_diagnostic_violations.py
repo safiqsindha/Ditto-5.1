@@ -83,6 +83,11 @@ def main():
                         help="Use Anthropic Batches API (50%% discount)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Use mock API responses (no spend)")
+    parser.add_argument("--ignore-timestamps", action="store_true",
+                        help="Add 'ignore timestamps when evaluating rule "
+                             "violations' to the question. Instrument "
+                             "correction for CS:GO synthetic-timestamp "
+                             "confound (D-43).")
     args = parser.parse_args()
 
     if not args.dry_run and not os.getenv("ANTHROPIC_API_KEY"):
@@ -167,6 +172,12 @@ def main():
         builder = PER_CELL_PROMPT_BUILDERS[cell]()
         domain = domain_names[cell]
         diag_q = DIAGNOSTIC_QUESTION.format(domain=domain)
+        if args.ignore_timestamps:
+            diag_q = (
+                "Note: ignore timestamps when evaluating rule violations. "
+                "Focus only on whether any event in the sequence breaks "
+                "the stated rules.\n\n" + diag_q
+            )
 
         clean_pairs = []
         for c in chains_passed:

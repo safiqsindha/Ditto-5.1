@@ -338,6 +338,36 @@ class NBAPromptBuilder(PromptBuilder):
         )
 
 
+class _MarkerSurfacing:
+    """Mixin-like helper for surfacing diagnostic state markers per-event.
+
+    Used by Poker, CS:GO, and RL prompt builders so the violation injectors'
+    derived-state markers (`already_folded`, `already_eliminated_this_round`,
+    `pre_goal_state_persisting`) survive the default 6-key context cap.
+    Mirrors the PUBG renderer override added 2026-04-29.
+    """
+    @staticmethod
+    def surface_markers(ctx: dict, actor_anon: str, actor_map: dict | None = None) -> str:
+        parts: list[str] = []
+        if ctx.get("already_folded"):
+            parts.append(f"NOTE={actor_anon}_already_folded")
+        if ctx.get("already_eliminated_this_round"):
+            parts.append(f"NOTE={actor_anon}_eliminated_this_round")
+        if ctx.get("pre_goal_state_persisting"):
+            parts.append("NOTE=pre_goal_state_persists_after_goal")
+        if ctx.get("eliminates_player"):
+            target = ctx["eliminates_player"]
+            # CF-4=B: anonymise the target of the elimination, not just the
+            # acting actor.
+            anon_target = (
+                actor_map.get(target, target) if actor_map else target
+            )
+            parts.append(f"ELIMINATES={anon_target}")
+        if ctx.get("goal_marker"):
+            parts.append("GOAL_SCORED")
+        return " ".join(parts)
+
+
 class CSGOPromptBuilder(PromptBuilder):
     """C-5 constraint context. Wording locked in T-design review (2026-04-28).
 
@@ -363,24 +393,21 @@ class CSGOPromptBuilder(PromptBuilder):
     def format_event(self, event: GameEvent, idx: int, actor_map: dict | None = None) -> str:
         anon = actor_map.get(event.actor, "Player_?") if actor_map else "Player_?"
         ctx = event.location_context or {}
+        # 2026-04-29 (D-43): surface diagnostic markers first so they survive.
+        marker_str = _MarkerSurfacing.surface_markers(ctx, anon, actor_map)
         action_label = ctx.get("action_label") or "?"
         team_id = ctx.get("team_id") or ""
-        # CF-4=B: anonymise team identity to "team_A"/"team_B". Use a stable
-        # deterministic hash (md5 first byte) so the same team_id always
-        # maps to the same slot across runs (Python's built-in hash() is
-        # PYTHONHASHSEED-randomized per process).
         team_slot = self._team_slot(team_id, ctx)
         winner_id = ctx.get("winner_faction", "")
-        # CF-4=B: also anonymise final_winner — raw team UUIDs are PII-equivalent
-        # for the experiment. Map to team_A / team_B / "(undecided)".
         winner_slot = self._team_slot(winner_id, ctx) if winner_id else "(undecided)"
         round_num = ctx.get("round", "?")
         map_name = ctx.get("map", "?")
         score = ctx.get("match_score", "?")
-        ctx_str = (
+        std_str = (
             f"action={action_label}, team={team_slot}, round={round_num}, "
             f"map={map_name}, final_score={score}, final_winner={winner_slot}"
         )
+        ctx_str = f"{marker_str}, {std_str}" if marker_str else std_str
         return (
             f"{idx:>3}. t={event.timestamp:>7.1f}s | "
             f"{event.event_type:<22} | actor={anon:<12} "
@@ -423,20 +450,23 @@ class RocketLeaguePromptBuilder(PromptBuilder):
     def format_event(self, event: GameEvent, idx: int, actor_map: dict | None = None) -> str:
         anon = actor_map.get(event.actor, "Player_?") if actor_map else "Player_?"
         ctx = event.location_context or {}
+        # 2026-04-29 (D-43): surface diagnostic markers first.
+        marker_str = _MarkerSurfacing.surface_markers(ctx, anon, actor_map)
         action_label = ctx.get("action_label") or "?"
         team_color = ctx.get("team_color") or event.actor_team or "?"
         score_b = ctx.get("score_blue", "?")
         score_o = ctx.get("score_orange", "?")
         duration = ctx.get("duration_s")
-        ctx_str = (
+        std_str = (
             f"action={action_label}, team={team_color}, "
             f"final_score=blue:{score_b}–orange:{score_o}"
         )
         if duration is not None:
             try:
-                ctx_str += f", match_duration_s={float(duration):.0f}"
+                std_str += f", match_duration_s={float(duration):.0f}"
             except (TypeError, ValueError):
                 pass
+        ctx_str = f"{marker_str}, {std_str}" if marker_str else std_str
         return (
             f"{idx:>3}. t={event.timestamp:>7.1f}s | "
             f"{event.event_type:<22} | actor={anon:<12} "
@@ -447,7 +477,14 @@ class RocketLeaguePromptBuilder(PromptBuilder):
 class PokerPromptBuilder(PromptBuilder):
     """P-5 constraint context. Wording locked in T-design review (2026-04-28)
     — game-name anchor ('NLHE') stripped to test rule-following rather than
-    pretrained domain recall."""
+    pretrained domain recall.
+
+    2026-04-29 (D-43): format_event override added to surface diagnostic
+    state markers (`already_folded`) per-event, mirroring PUBG's
+    elimination-marker rendering. Without the override, the default
+    6-key context cap drops these markers. The override applies the
+    same logic uniformly across PUBG/Poker/CSGO/RL renderers.
+    """
 
     def __init__(self):
         super().__init__(cell="poker")
@@ -461,6 +498,29 @@ class PokerPromptBuilder(PromptBuilder):
 
     def format_question(self, chain: ChainCandidate) -> str:
         return _CLASSIFY_QUESTION.format(domain="poker")
+
+    def format_event(self, event: GameEvent, idx: int, actor_map: dict | None = None) -> str:
+        anon = actor_map.get(event.actor, "Player_?") if actor_map else "Player_?"
+        ctx = event.location_context or {}
+        # Surface diagnostic markers first so they're never dropped.
+        marker_str = _MarkerSurfacing.surface_markers(ctx, anon, actor_map)
+        # Standard poker fields.
+        street = ctx.get("street", "?")
+        position = ctx.get("position", "?")
+        action = ctx.get("action", "?")
+        bet = ctx.get("bet_size_bb", "?")
+        pot = ctx.get("pot_size_bb", "?")
+        stack = ctx.get("stack_bb", "?")
+        std_str = (
+            f"street={street}, position={position}, action={action}, "
+            f"bet_size_bb={bet}, pot_size_bb={pot}, stack_bb={stack}"
+        )
+        ctx_str = f"{marker_str}, {std_str}" if marker_str else std_str
+        return (
+            f"{idx:>3}. t={event.timestamp:>7.1f}s | "
+            f"{event.event_type:<22} | actor={anon:<12} "
+            f"| {ctx_str}"
+        )
 
 
 PER_CELL_PROMPT_BUILDERS = {

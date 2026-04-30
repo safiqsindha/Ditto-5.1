@@ -184,6 +184,94 @@ def inject_pubg_elimination_violation(chain: ChainCandidate) -> InjectionResult 
     )
 
 
+def inject_poker_folded_acts_violation(chain: ChainCandidate) -> InjectionResult | None:
+    """
+    TIER-1 candidate per the v3 reviewer synthesis (Gemini + Opus + ChatGPT,
+    DECISION_LOG D-43). The constraint context says "A folded player cannot
+    act again." This injector mirrors the PUBG elimination pattern exactly:
+
+      1. Pick an actor with at least 2 events in the chain.
+      2. Mutate their EARLIEST event to be `action=f` (fold).
+      3. On every SUBSEQUENT event by that actor, attach a per-event marker
+         `NOTE=Player_X_already_folded` so PokerPromptBuilder.format_event
+         (override added 2026-04-29) renders the marker on each line.
+
+    The model's check then collapses to a unary per-event predicate:
+    "if NOTE says folded, actor must not act." This is structurally
+    identical to PUBG's `NOTE=Player_3_already_eliminated` pattern that
+    achieved 100% detection.
+
+    The original v1 fold-then-bet injector failed at ~50% because the
+    fold event had no persistent marker — the model had to remember the
+    earlier fold to detect the later violation. Adding the per-event
+    marker eliminates the cross-event memory load.
+    """
+    if len(chain.events) < 3:
+        return None
+
+    events = [_clone(e) for e in chain.events]
+
+    # Find an actor with ≥2 events (so we can fold them early + see them act later).
+    actor_first_idx: dict[str, int] = {}
+    actor_last_idx: dict[str, int] = {}
+    for i, ev in enumerate(events):
+        if ev.actor not in actor_first_idx:
+            actor_first_idx[ev.actor] = i
+        actor_last_idx[ev.actor] = i
+
+    candidates = [
+        a for a, last in actor_last_idx.items()
+        if actor_first_idx[a] != last
+    ]
+    if not candidates:
+        return None
+
+    target_actor = candidates[0]
+    fold_idx = actor_first_idx[target_actor]
+
+    # Mutate the earliest event to be a fold.
+    fold_event = events[fold_idx]
+    fold_event.event_type = "disengage_decision"
+    fold_event.location_context = dict(fold_event.location_context or {})
+    fold_event.location_context["action"] = "f"
+    fold_event.location_context["bet_size_bb"] = 0.0
+
+    # Mark every subsequent event from the SAME actor with the persistent
+    # folded-status marker. Subsequent events from OTHER actors don't get
+    # the marker (they didn't fold).
+    for i in range(fold_idx + 1, len(events)):
+        if events[i].actor == target_actor:
+            events[i].location_context = dict(events[i].location_context or {})
+            events[i].location_context["already_folded"] = True
+            # Force the actor's later event to be a non-fold (cbr/raise) so
+            # the violation is observable: folded player taking action.
+            events[i].event_type = "engage_decision"
+            if events[i].location_context.get("action") in (None, "f", ""):
+                events[i].location_context["action"] = "cbr"
+                events[i].location_context.setdefault("bet_size_bb", 5.0)
+
+    new_chain = ChainCandidate(
+        chain_id=chain.chain_id + "_adv",
+        game_id=chain.game_id,
+        cell=chain.cell,
+        events=events,
+        chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                        "violation_clause": "folded_cannot_act_v3"},
+    )
+    later_idx = actor_last_idx[target_actor]
+    return InjectionResult(
+        chain=new_chain, cell="poker",
+        violation_clause="A folded player cannot act again",
+        violation_description=(
+            f"Actor {target_actor} folds at event {fold_idx} but acts at "
+            f"event {later_idx}; per-event marker visible on every "
+            f"post-fold event for that actor"
+        ),
+        target_actor=target_actor,
+        target_event_idx=later_idx,
+    )
+
+
 def inject_poker_overbet_violation(chain: ChainCandidate) -> InjectionResult | None:
     """
     PER-EVENT poker violation anchored to a STATED constraint clause.
@@ -382,6 +470,80 @@ def inject_poker_fold_violation(chain: ChainCandidate) -> InjectionResult | None
     )
 
 
+def inject_csgo_eliminated_acts_violation(chain: ChainCandidate) -> InjectionResult | None:
+    """
+    TIER-1 candidate per v3 reviewer synthesis (DECISION_LOG D-43). The
+    constraint context says "Eliminated players don't respawn until next
+    round." Mirrors PUBG/Poker pattern:
+
+      1. Pick an actor with ≥2 events.
+      2. Mutate their first event to record an elimination marker.
+      3. On every SUBSEQUENT event from that actor, attach
+         `NOTE=Player_X_eliminated_this_round` — logically inconsistent.
+
+    The model's check is a unary per-event predicate.
+
+    Note: this still has the synthetic-timestamp confound (all events
+    stamped to round-start t=115.5s), but if the elimination marker is
+    visible per-event, the discrimination signal between adversarial
+    and clean chains should still surface even on top of that artifact.
+    The diagnostic --ignore-timestamps flag (added 2026-04-29) provides
+    an additional instrument correction.
+    """
+    if len(chain.events) < 3:
+        return None
+
+    events = [_clone(e) for e in chain.events]
+
+    # Find an actor with ≥2 events.
+    actor_first_idx: dict[str, int] = {}
+    actor_last_idx: dict[str, int] = {}
+    for i, ev in enumerate(events):
+        if ev.actor not in actor_first_idx:
+            actor_first_idx[ev.actor] = i
+        actor_last_idx[ev.actor] = i
+
+    candidates = [
+        a for a, last in actor_last_idx.items()
+        if actor_first_idx[a] != last
+    ]
+    if not candidates:
+        return None
+
+    target_actor = candidates[0]
+    elim_idx = actor_first_idx[target_actor]
+
+    elim_event = events[elim_idx]
+    elim_event.location_context = dict(elim_event.location_context or {})
+    elim_event.location_context["eliminates_player"] = target_actor
+    elim_event.location_context["action_label"] = "eliminated"
+
+    for i in range(elim_idx + 1, len(events)):
+        if events[i].actor == target_actor:
+            events[i].location_context = dict(events[i].location_context or {})
+            events[i].location_context["already_eliminated_this_round"] = True
+
+    new_chain = ChainCandidate(
+        chain_id=chain.chain_id + "_adv",
+        game_id=chain.game_id,
+        cell=chain.cell,
+        events=events,
+        chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                        "violation_clause": "eliminated_no_respawn_v3"},
+    )
+    later_idx = actor_last_idx[target_actor]
+    return InjectionResult(
+        chain=new_chain, cell="csgo",
+        violation_clause="Eliminated players don't respawn until next round",
+        violation_description=(
+            f"Actor {target_actor} eliminated at event {elim_idx} but acts "
+            f"at event {later_idx}; marker visible per-event"
+        ),
+        target_actor=target_actor,
+        target_event_idx=later_idx,
+    )
+
+
 def inject_csgo_team_flip_violation(chain: ChainCandidate) -> InjectionResult | None:
     """
     LOCALLY-VERIFIABLE CS:GO violation within the FACEIT aggregate-stat data
@@ -501,6 +663,68 @@ def inject_csgo_round_violation(chain: ChainCandidate) -> InjectionResult | None
     )
 
 
+def inject_rocket_league_post_goal_violation(chain: ChainCandidate) -> InjectionResult | None:
+    """
+    TIER-1 candidate per v3 reviewer synthesis (DECISION_LOG D-43). The
+    constraint context says "A goal resets ball and player positions for
+    a kickoff." This injector applies the PUBG/Poker derived-state-marker
+    pattern uniformly:
+
+      1. Pick an event mid-chain to mark as `goal_scored=True`.
+      2. On every SUBSEQUENT event, attach `NOTE=pre_goal_state` — this is
+         logically inconsistent because a goal MUST reset positions, so any
+         pre-goal state appearing post-goal violates the rule.
+
+    The model's check is a unary per-event predicate: "if NOTE says
+    pre_goal_state on a post-goal event, that's a reset violation." No
+    cross-event memory required (the marker is on every event).
+
+    The original v2 team-size injector failed at 25% because counting
+    distinct actors per team across 12 events is multi-event aggregation
+    (Tier 3). This Tier-1 reframe uses ONLY existing data + derived state
+    markers — no fabricated boost levels or positions.
+    """
+    if len(chain.events) < 3:
+        return None
+
+    events = [_clone(e) for e in chain.events]
+
+    # Pick a goal point ~1/3 through the chain so we have enough events
+    # before AND after to make the violation observable.
+    goal_idx = max(1, len(events) // 3)
+    goal_event = events[goal_idx]
+    goal_event.event_type = "objective_capture"
+    goal_event.location_context = dict(goal_event.location_context or {})
+    goal_event.location_context["action_label"] = "goal_scored"
+    goal_event.location_context["goal_marker"] = True
+
+    # Mark every event AFTER the goal with `pre_goal_state` — this is
+    # logically inconsistent because the goal should have reset positions.
+    for i in range(goal_idx + 1, len(events)):
+        events[i].location_context = dict(events[i].location_context or {})
+        events[i].location_context["pre_goal_state_persisting"] = True
+
+    new_chain = ChainCandidate(
+        chain_id=chain.chain_id + "_adv",
+        game_id=chain.game_id,
+        cell=chain.cell,
+        events=events,
+        chain_metadata={**(chain.chain_metadata or {}), "adversarial": True,
+                        "violation_clause": "goal_reset_violated"},
+    )
+    return InjectionResult(
+        chain=new_chain, cell="rocket_league",
+        violation_clause="A goal resets ball and player positions for a kickoff",
+        violation_description=(
+            f"Goal scored at event {goal_idx}, but events "
+            f"{goal_idx+1}..{len(events)-1} carry pre_goal_state markers "
+            f"(should have reset)"
+        ),
+        target_actor=goal_event.actor,
+        target_event_idx=goal_idx,
+    )
+
+
 def inject_rocket_league_team_size_violation(chain: ChainCandidate) -> InjectionResult | None:
     """
     LOCALLY-VERIFIABLE Rocket League violation. Constraint says "Teams of 3
@@ -607,11 +831,11 @@ def inject_rocket_league_demolished_violation(chain: ChainCandidate) -> Injectio
 # global fails at 45-55%). v2 swaps Poker, RL, CS:GO injectors to local
 # variants. NBA stayed on its v1 injector because it was already local.
 INJECTORS = {
-    "nba": inject_nba_foul_violation,                      # per-event, anchored to "6 fouls = ejection" — PASSES at 95-100%
-    "pubg": inject_pubg_elimination_violation,             # per-event, anchored to "eliminated cannot act" — PASSES at 100%
-    "poker": inject_poker_overbet_violation,               # per-event, anchored to "Cannot wager more than held" — v3 (was stack_arithmetic which wasn't anchored)
-    "csgo": inject_csgo_team_flip_violation,               # local but timestamp confound
-    "rocket_league": inject_rocket_league_team_size_violation,  # multi-event aggregation — fails on Haiku
+    "nba": inject_nba_foul_violation,                      # Tier 1 (per-event simple) — 95-100%
+    "pubg": inject_pubg_elimination_violation,             # Tier 1 (per-event marker) — 100%
+    "poker": inject_poker_folded_acts_violation,           # v4: per-event marker mirroring PUBG — was overbet (Tier 2)
+    "csgo": inject_csgo_eliminated_acts_violation,         # v3: per-event marker mirroring PUBG — was team_flip
+    "rocket_league": inject_rocket_league_post_goal_violation,  # v3: per-event derived-state marker — was team_size (Tier 3)
 }
 
 # Legacy global injectors for comparison studies
