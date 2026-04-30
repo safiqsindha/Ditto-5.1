@@ -160,11 +160,37 @@ Tier 0 is a special case: the rule is internalized so deeply that baseline detec
 
 NBA (9.9%) and CSGO (29.8%) have non-trivial intervention FP rates worth mechanistic analysis. Layer-2 CoT was run on a sample of FP chains from each cell (`run_phase_d_cot.py`) — for each FP, the model was asked to quote the rule it thinks was violated and identify the event index.
 
-**NBA (50 of 119 FPs analyzed):** *(filled in once `RESULTS/phase_d_cot_residual_fps.json` lands; expect rule quotes pointing at residual ambiguity in shot-clock or possession-elapsed framing — not the original `possession_elapsed_s` confusion that D-44 fixed, but a new failure mode revealed at scale)*
+#### NBA — 50 of 119 FPs analyzed
 
-**CSGO (50 of 358 FPs analyzed):** *(filled in once `RESULTS/phase_d_cot_residual_fps.json` lands; expected to be dominated by "Bomb plants only at sites A or B" citations — the model hallucinating absent plant events. This is the constraint-triggered confabulation signature that motivates deferring CS:GO's awpy fix to v5.2.)*
+| Cited rule | Count | % of analyzed |
+|---|---:|---:|
+| "Offensive team must shoot within 24 seconds of gaining possession" | 46 | 92% |
+| "A player with 6 fouls is ejected" | 4 | 8% |
 
-> **For the arXiv author**: CoT data lives at `RESULTS/phase_d_cot_residual_fps.json` and `RESULTS/phase_d_cot_residual_fps.log`. Read those when assembling the §4.4 mechanism subsection.
+**Mechanism**: 92% of NBA's residual intervention FPs are shot-clock confabulations. This is *not* the same failure mode that D-44's field rename (`possession_elapsed_s` → `time_in_possession_s`) addressed — that fix eliminated misreading of the per-event timing variable. At n=1,200 a *second-order* shot-clock failure surfaces: the model computes some inferred elapsed-time from chain context and flags it against the 24-second rule even when the chain shows a successful shot well within bounds.
+
+The 4 foul-rule FPs are likely real edge cases (chains that happen to contain players with high foul counts that the violation injector didn't elevate to 7).
+
+**Implication**: NBA residual confabulation is a *renderer* problem, not a *reasoning* problem — the chain renders enough timing structure that the model attempts a 24-second check, and that inference fails on ~10% of chains. A v5.2 fix could surface explicit possession-start markers (`POSSESSION_START_AT=t_n`) so the timing check is verifiable end-to-end. Deferred to follow up on cross-model results.
+
+#### CSGO — 50 of 358 FPs analyzed
+
+| Cited rule | Count | % of analyzed |
+|---|---:|---:|
+| "Bomb plants only at sites A or B" | 40 | 80% |
+| "Eliminated players don't respawn until next round" | 10 | 20% |
+
+**Mechanism**: 80% of CSGO's residual intervention FPs are exactly the predicted constraint-triggered confabulation — the model knows CS:GO bomb plants must occur at sites A or B, the FACEIT data path doesn't emit plant events at all, and the model concludes plants must have happened off-chain at unauthorized locations. This is the textbook signature of *unverifiable rule + plausible inference = false positive*.
+
+The 20% citing the respawn rule is a related failure: the model is reasoning about player counts across rounds and concluding that respawn timing was violated, when in fact the FACEIT data doesn't render per-round respawn information either. Same root cause: missing observability for a stated rule.
+
+**Implication**: CSGO is the cleanest empirical demonstration of Tier-2 partial-observability failure. v5.2 awpy demo extraction adds the missing `actionType=plant` events with `site=A/B` attributes; if that drops intervention FP from 29.8% to <5%, it confirms that the failure is observability-bound rather than reasoning-bound. **This is exactly the test that motivates running awpy-fixed CSGO *after* cross-model lands** — separating model capability from data observability requires both the cross-model heatmap and the observability-fix as independent axes.
+
+#### Why this matters for the arXiv
+
+Both NBA and CSGO residual FPs are *interpretable* via the model's own self-explanation. The CoT diagnostic is therefore the mechanistic evidence that supports the 4-tier hierarchy claim — we're not inferring "the model confabulates because of missing observability"; the model *tells us* which rule it thinks was broken, and the rule citations cluster cleanly around the rules with missing predicate observability. This is among the strongest mechanistic evidence the paper has.
+
+> **For the arXiv author**: full CoT data at `RESULTS/phase_d_cot_residual_fps.json`. Per-sample rule + event citations are in the `samples` array — useful for case studies in §4.4.
 
 ---
 

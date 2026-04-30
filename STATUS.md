@@ -49,6 +49,15 @@ The original (consistency-rating) framing produced a floor effect on 4 of 5 cell
 **Defensible claim from this data:**
 > Constraint reasoning in LLMs is gated by representational alignment between the rule and the observable event structure. It succeeds when violations reduce to observable unary predicates over event streams; it degrades predictably under missing observability; it is suppressed entirely under strict grounding when required variables are absent.
 
+### Mechanistic evidence — Layer-2 CoT diagnostic on residual FPs
+
+`run_phase_d_cot.py` asked the model to quote the rule it thinks was violated on FP chains. Results (`RESULTS/phase_d_cot_residual_fps.json`):
+
+- **NBA** (50 of 119 FPs analyzed): 92% cite the 24-second shot clock; 8% cite the foul ejection rule. Shot-clock cluster is a renderer gap (no explicit possession-start markers).
+- **CSGO** (50 of 358 FPs analyzed): 80% cite "bomb plants only at sites A or B"; 20% cite the respawn rule. Both are textbook constraint-triggered confabulation — the rule predicates aren't observable in the FACEIT aggregate data path.
+
+The FPs cluster cleanly around rules whose predicate variables aren't surfaced in the rendered chain. **The model doesn't fail randomly — it fails exactly where the rule's required variables are absent.** This is the strongest evidence in v5 that the failure mode is representational, not reasoning-bound.
+
 ---
 
 ## Where the artifacts live

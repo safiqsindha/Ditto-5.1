@@ -1,0 +1,142 @@
+{
+  "nba": {
+    "n_fps_total": 119,
+    "n_fps_analyzed": 50,
+    "rule_distribution": {
+      "Offensive team must shoot within 24 seconds of gaining possession.": 46,
+      "A player with 6 fouls is ejected.": 4
+    },
+    "samples": [
+      {
+        "chain_id": "f5d0fb03c9379536_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "4",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 4"
+      },
+      {
+        "chain_id": "8ec7cf892967d6a4_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "4",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 4"
+      },
+      {
+        "chain_id": "15050e8c12a29cb5_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "2",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 2"
+      },
+      {
+        "chain_id": "e7493b10f6e6f329_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "4",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 4"
+      },
+      {
+        "chain_id": "0964dd2f4fbe55bd_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "3",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 3"
+      },
+      {
+        "chain_id": "bc9fed0fa278af43_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "0",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 0"
+      },
+      {
+        "chain_id": "d9ee09d09346782f_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "4",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 4"
+      },
+      {
+        "chain_id": "7b52a25b2f254922_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "2",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 2"
+      },
+      {
+        "chain_id": "531bcf31736b1ee4_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "3",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 3"
+      },
+      {
+        "chain_id": "1d81efe5c46fcc8e_sub000_cot",
+        "rule": "Offensive team must shoot within 24 seconds of gaining possession.",
+        "events": "2",
+        "raw_excerpt": "RULE: Offensive team must shoot within 24 seconds of gaining possession.\nEVENTS: 2"
+      }
+    ]
+  },
+  "csgo": {
+    "n_fps_total": 358,
+    "n_fps_analyzed": 50,
+    "rule_distribution": {
+      "Bomb plants only at sites A or B.": 40,
+      "Eliminated players don't respawn until next round.": 10
+    },
+    "samples": [
+      {
+        "chain_id": "a4cbe23e2b635782_sub001_cot",
+        "rule": "Bomb plants only at sites A or B.",
+        "events": "5, 6, 7, 8, 9",
+        "raw_excerpt": "RULE: Bomb plants only at sites A or B.\nEVENTS: 5, 6, 7, 8, 9"
+      },
+      {
+        "chain_id": "5f5f1f81abdc45e0_sub000_cot",
+        "rule": "Bomb plants only at sites A or B.",
+        "events": "6, 7, 8, 9",
+        "raw_excerpt": "RULE: Bomb plants only at sites A or B.\nEVENTS: 6, 7, 8, 9"
+      },
+      {
+        "chain_id": "5f5f1f81abdc45e0_sub001_cot",
+        "rule": "Eliminated players don't respawn until next round.",
+        "events": "6, 7, 8, 9",
+        "raw_excerpt": "RULE: Eliminated players don't respawn until next round.\nEVENTS: 6, 7, 8, 9\n\n**"
+      },
+      {
+        "chain_id": "719dca952c4ad902_sub000_cot",
+        "rule": "Bomb plants only at sites A or B.",
+        "events": "2, 3, 5",
+        "raw_excerpt": "RULE: Bomb plants only at sites A or B.\nEVENTS: 2, 3, 5"
+      },
+      {
+        "chain_id": "a5c443b573bbdd0f_sub000_cot",
+        "rule": "Bomb plants only at sites A or B.",
+        "events": "5, 6, 7, 8, 9",
+        "raw_excerpt": "RULE: Bomb plants only at sites A or B.\nEVENTS: 5, 6, 7, 8, 9"
+      },
+      {
+        "chain_id": "0b169927a0b610d4_sub001_cot",
+        "rule": "Bomb plants only at sites A or B.",
+        "events": "4",
+        "raw_excerpt": "RULE: Bomb plants only at sites A or B.\nEVENTS: 4"
+      },
+      {
+        "chain_id": "0b169927a0b610d4_sub003_cot",
+        "rule": "Eliminated players don't respawn until next round.",
+        "events": "6,7,8",
+        "raw_excerpt": "RULE: Eliminated players don't respawn until next round.\nEVENTS: 6,7,8"
+      },
+      {
+        "chain_id": "b0b40698250e7dfa_sub000_cot",
+        "rule": "Bomb plants only at sites A or B.",
+        "events": "0",
+        "raw_excerpt": "RULE: Bomb plants only at sites A or B.\nEVENTS: 0"
+      },
+      {
+        "chain_id": "42f978881ccb7c0f_sub000_cot",
+        "rule": "Bomb plants only at sites A or B.",
+        "events": "5, 6, 7, 8, 9",
+        "raw_excerpt": "RULE: Bomb plants only at sites A or B.\nEVENTS: 5, 6, 7, 8, 9"
+      },
+      {
+        "chain_id": "42f978881ccb7c0f_sub003_cot",
+        "rule": "Eliminated players don't respawn until next round.",
+        "events": "5, 8",
+        "raw_excerpt": "RULE: Eliminated players don't respawn until next round.\nEVENTS: 5, 8"
+      }
+    ]
+  }
+}
