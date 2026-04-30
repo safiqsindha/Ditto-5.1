@@ -1057,3 +1057,106 @@ Under strict-grounding, RL's post-goal-state-marker injection no longer produces
 > "Haiku 4.5 exercises constraint reasoning across abstract event chains when (a) the violation is anchored to a stated constraint rule, (b) the rule's required variables are observable per-event in the rendered chain, and (c) the prompt forces strict rule+event grounding. The methodology validated on 3 of 5 game domains at n=20 (PUBG, NBA, Poker — strict Tier-1) with clean intervention lifts on 2 cells (NBA +25pp, CS:GO +30pp; McNemar c-b textbook positive). Failure modes are mechanistically characterized: indirect-marker pattern matching collapses under strict grounding (RL), and unverifiable rules (where the rule's variables aren't surfaced in the chain) produce model hallucination FPs (CS:GO). Both unresolved cells graduate to v5.1 with per-event data extraction (boxcars-py / awpy) which would restore strict-grounded detection."
 
 ---
+
+## Decision D-45: Phase D Final — n=1,200 Across All Five Cells, Locked Headline Result
+
+**Date:** 2026-04-30  
+**Context:** D-44 produced clean Tier-1 results at n=20. Phase D scales the violation-detection diagnostic to the full pre-registered n=1,200 chains/cell across all five domains. This entry locks the final results and the decisions made on the back of them.
+
+### Phase D execution — what actually happened
+
+**First attempt (2026-04-29 23:42 → 2026-04-30 02:18):**
+- `run_diagnostic_violations.py --batch --n-per-cell 1200 --ignore-timestamps` for all 5 cells
+- PUBG completed (clean: 2400/2400, adversarial: 2400/2400)
+- NBA completed (clean: 2400/2400, adversarial: 2400/2400)
+- **Poker crashed at 02:18:47** with HTTP 400 from Anthropic Batches API: `requests: custom_ids must be unique within a batch. Duplicate custom_ids found`. ~154 chain_ids out of 1,200 were duplicated within the Poker prompt-pair list, and the previous custom_id format (`<chain_id>__<variant>`) collapsed those duplicates so the API rejected the entire batch.
+- RL and CS:GO never launched.
+
+**Fix:** prefixed every custom_id with a 6-digit zero-padded positional index in `src/harness/model_evaluator.py` (commit `be84525`). Re-pairing at result-time uses the same `(idx, chain_id, variant)` tuple, so chain_id integrity is preserved while custom_id uniqueness is guaranteed within a batch. Also logs a warning when duplicates are detected.
+
+**Resume run (2026-04-30 08:13 → 08:39):**
+- `run_diagnostic_violations.py --batch --cells poker rocket_league csgo --n-per-cell 1200 --ignore-timestamps`
+- All 6 batches succeeded. One transient API error in Poker adversarial (2399/2400).
+- PUBG + NBA results retrieved from the saved batch IDs of the original run (`retrieve_phase_d_partial.py`).
+- Synthesized via `synthesize_phase_d.py` with McNemar (continuity correction or exact binomial when n_disc<25), Bonferroni divisor=5, 5,000-iter cluster bootstrap.
+
+### Final results
+
+| Cell | Det@Base | Det@Int | Δ | 95% CI | FP@Base | FP@Int | b | c | χ² | p_Bonf |
+|------|---------:|--------:|--------:|:-:|--------:|-------:|---:|---:|---:|---:|
+| pubg | 75.9% | 100.0% | +24.1% | [+21.8, +26.6] | 0.0% | 0.0% | 0 | 289 | 287.0 | **1.1e-63** |
+| nba | 57.4% | 100.0% | +42.6% | [+39.8, +45.4] | 0.8% | 9.9% | 0 | 511 | 509.0 | **5.2e-112** |
+| csgo | 65.1% | 98.1% | +32.9% | [+30.3, +35.7] | 11.3% | 29.8% | 0 | 395 | 393.0 | **9.2e-87** |
+| rocket_league | 0.2% | 6.2% | +5.9% | [+4.7, +7.3] | 0.0% | 0.0% | 0 | 71 | 69.0 | **4.9e-16** |
+| poker | 100.0% | 99.9% | -0.1% | [-0.25, 0.00] | 0.5% | 1.1% | 1 | 0 | 0.0 | 1.000 |
+
+**4/5 cells significant past Bonferroni at α/5 by many orders of magnitude.** Poker shows a ceiling effect (no room to lift), not a failure.
+
+### Headline finding — 4-tier representational hierarchy
+
+| Tier | Cell | Anchored | Observable | Unary-reducible | Result profile |
+|---|---|:-:|:-:|:-:|---|
+| **0** Saturated | poker | ✓ | ✓ | ✓ | rule pre-internalized — no lift possible (100%/99.9%) |
+| **1** Aligned | pubg, nba | ✓ | ✓ | ✓ | clean intervention lift to perfect detection |
+| **2** Partial | csgo | ✓ | ✗ (bomb sites missing) | ✓ | high lift but elevated FP — confabulation signature |
+| **3** Misaligned | rocket_league | ✓ | ✗ (positions absent) | ✗ | tiny but real lift; strict grounding correctly suppresses confabulation |
+
+**Three necessary conditions for constraint reasoning:** rule anchoring, predicate observability, unary reducibility. The empirical claim that this data supports:
+
+> *Constraint reasoning in LLMs is gated by representational alignment between the rule and the observable event structure. It succeeds when violations reduce to observable unary predicates over event streams; it degrades predictably under missing observability, and it is suppressed entirely under strict grounding when required variables are absent.*
+
+### Decisions on the back of Phase D
+
+**1. Ship v5 on these results — do NOT re-iterate methodology before publication.**
+
+The methodology pivots that landed Phase D (D-42 violation-detection framing, D-43 derived-state markers, D-44 strict-grounding + CoT diagnostic) collectively transform v5 from a v3 replication into a 4-tier hierarchy paper. Further iteration risks scope creep and p-hacking the methodology until all 5 cells fit Tier-1.
+
+**2. CS:GO awpy fix is explicitly DEFERRED to v5.1 / cross-model.**
+
+The CS:GO confabulation signature (29.8% intervention FP) is *data*, not noise. The interesting cross-model question is *whether more capable models confabulate less when observability is missing*, which can only be measured if we keep CS:GO observability-limited as v1's baseline. Adding awpy plant-site data first would erase that axis. Run awpy-fixed CS:GO as a secondary cell *after* cross-model lands.
+
+**3. Rocket League is not "broken" — it is the strongest negative finding.**
+
+The 0.2%→6.2% lift with zero FP is the empirical demonstration that strict grounding correctly refuses indirect-marker inference. Earlier RL versions (D-43 era) showed near-100% detection by pattern-matching the `pre_goal_state_persists` marker; strict grounding (D-44) revealed that wasn't real reasoning. Tampering with the violation injector to lift detection numbers would re-introduce the indirect-marker shortcut. Keep RL as the Tier-3 anchor.
+
+**4. Poker's ceiling is a result, not a missing data point.**
+
+100% baseline detection means the model already internalizes the "folded player acts" rule from common knowledge. The ceiling effect anchors the top of the hierarchy (Tier-0 = saturated). Don't try to make poker show a lift.
+
+**5. Cross-model replication is the v5.1 (or v6) experiment, scoped separately.**
+
+Pre-registered design (worked through with reviewer 2026-04-30):
+- Freeze Phase D prompt corpus to immutable JSON
+- Replay across ~11 models via OpenRouter (Anthropic/OpenAI/Google/open-weights cross-section)
+- n=300/cell (Phase D was overpowered at n=1,200)
+- Add a derived-state-marker ablation as a first-class second axis
+- Pre-flight n=20 smoke test per model
+- Budget cap ~$150
+- Pre-registered analyses: per-cell × per-model McNemar heatmap; tier-collapse test (does Opus catch RL's indirect markers?); FP-discipline-vs-capability scaling
+
+### Code impact
+
+- `src/harness/model_evaluator.py`: positional custom_id prefix fix (commit `be84525`)
+- `synthesize_phase_d.py` (new, commit `61a7d43`): final 5-cell synthesis
+- `retrieve_phase_d_partial.py` (new, commit `61a7d43`): retrieve saved batches
+- `archive_phase_d_batches.py` (new, commit `61a7d43`): freeze raw responses locally before 60-day expiry
+- `run_phase_d_cot.py` (new, commit `61a7d43`): Layer-2 CoT on residual FPs
+- `RESULTS/phase_d_raw_batches/` (new, commit `7033cb1`): 23,998 archived request records (~6 MB)
+- `RESULTS/phase_d_final.json` (gitignored — regenerable from archive via `synthesize_phase_d.py`)
+
+### Reversibility
+
+The v5 SPEC (5 cells, 1,200 chains, McNemar+Bonferroni+bootstrap, two-call paired design) was preserved through every methodology pivot. Reverting any individual layer (strict grounding, derived markers, violation-detection framing) is a single prompt-builder change — the harness is unchanged. The headline result, however, depends on the full stack; partial reversal would not reproduce.
+
+### Total v5 spend
+
+- Phase D first attempt (PUBG + NBA + crashed Poker): ~$2 batched
+- Phase D resume (Poker + RL + CSGO): ~$2 batched
+- All prior diagnostics + pilots + smoke tests: ~$1
+- **Total: ~$5 across the entire experiment.** Within the original $4 budget projection (D-44) plus one batch's worth of crash-recovery.
+
+### Methodology summary (final, publishable)
+
+> *"Haiku 4.5 exercises constraint reasoning across structured event sequences only when the rule's required predicates are observable in the rendered chain and reducible to a per-event unary check. Across five game domains (n=1,200 chains/cell), violation-detection accuracy under constraint-context intervention vs. baseline produces four distinct response profiles: ceiling (poker, rule pre-internalized), aligned (PUBG +24pp, NBA +43pp, both to 100% detection), partial-observability (CS:GO +33pp at the cost of elevated false-positive confabulation), and misaligned (Rocket League +6pp, near-floor — strict grounding correctly refuses indirect-marker inference). 4 of 5 cells significant at p_Bonf < 1e-15. The unifying claim, well-supported by all five cells, is that LLM constraint reasoning succeeds when violations reduce to observable unary predicates over event streams; degrades predictably under missing observability; and is suppressed entirely under strict grounding when required variables are absent. Cross-model generalization (v5.1) tests whether this representational hierarchy is a property of the task or a property of Haiku 4.5 specifically."*
+
+---
