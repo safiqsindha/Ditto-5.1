@@ -1,0 +1,27 @@
+{
+  "batches": {
+    "pubg_clean": "msgbatch_01VcHLdLj8zwBPjtgrQFw3Lp",
+    "pubg_adversarial": "msgbatch_01QxaNgJFjDjJdargiuZbUpF",
+    "nba_clean": "msgbatch_01NFDJnX98DCEgzd6hzzo6Fp",
+    "nba_adversarial": "msgbatch_01WmT9EJ3fzbcot4yDMx4FG6",
+    "poker_clean": "msgbatch_019CdSVP7bL3vjjiAxoogzoX",
+    "poker_adversarial": "msgbatch_01NSGy2V2ZayjVPGQd2qgLuC",
+    "rl_clean": "msgbatch_01BPB6U1sYABgv41arrnVPLb",
+    "rl_adversarial": "msgbatch_0186kapuWTHCPLkNcZHfmSgF",
+    "csgo_clean": "msgbatch_01QgQdJGqEdSTtFngdDa2REX",
+    "csgo_adversarial": "msgbatch_019Zn6WjnTHU1Ca3FKrL8NCi"
+  },
+  "request_counts": {
+    "pubg_clean": 2400,
+    "pubg_adversarial": 2400,
+    "nba_clean": 2400,
+    "nba_adversarial": 2400,
+    "poker_clean": 2400,
+    "poker_adversarial": 2400,
+    "rl_clean": 2400,
+    "rl_adversarial": 2400,
+    "csgo_clean": 2400,
+    "csgo_adversarial": 2398
+  },
+  "note": "Phase D raw batch responses, archived locally because Anthropic retains batches for 60 days. Each line in <label>__<batch_id>.jsonl is one request: {custom_id, type, text, usage}. Re-score with synthesize_phase_d.py \u2014 it falls through to fetch_batch which can be modified to read these files instead of hitting the API."
+}
