@@ -93,6 +93,8 @@ For every (model, chain, condition) triple, the model produces a response parsed
 
 **H1 carries a binding scope condition.** The estimand is the marginal intervention effect over the regime mixture, **not** the effect that would obtain if all models were run in their default deployment state. We acknowledge this explicitly and (a) include `intervention × regime_stratum` as a fixed-effect interaction in the primary regression so the mixture's regime-shift heterogeneity is not silently absorbed into the main effect, and (b) report regime-stratified estimates as primary supplementary tables (not just a sensitivity trigger).
 
+**Estimand framing (binding).** This study estimates a property of **model–inference-configurations**, not a property of models in the abstract. The unit of analysis is the (model, inference-configuration) pair as deployed in this study, not the model as a deployable artifact in arbitrary downstream contexts. The §6.3.2 reasoning-control experiment provides the empirical justification: 12 of 13 flag-bearing models produce materially different classifications under the constrained-inference regime versus their default regime, demonstrating that "what model X does" is not identifiable independently of "the inference configuration model X was run under." Any claim of the form "model X has property Y" requires the additional qualifier "...under the suppressed-CoT inference regime documented in §6.2."
+
 **Primary-estimand precedence (binding).** The **only** primary estimand is the marginal intervention effect averaged over the empirical regime distribution, computed via `emmeans::emmeans(fit, ~intervention) |> contrast()` on the §8.1 fitted model. All regime-stratified analyses (§8.4) and routing-partition analyses (§8.7) are descriptive supplementary results that **cannot alter** the H1 primary inferential outcome. The §8.4 escalation rule changes *reporting priority* (which estimate appears first in the abstract and discussion), not *inferential authority* — H1's pass/fail status against its MDE and FDR threshold is determined solely by the marginal estimand.
 
 **H2 (secondary, two-sided).** The intervention effect on `detection_rate` is heterogeneous across the model panel: the `intervention × model` interaction term has at least one **shrinkage-adjusted (BLUP)** coefficient with absolute log-odds ≥ 0.5 after **single-global-family** FDR correction at q = 0.05 (per §8.6). Because we use partial pooling, BLUPs shrink toward zero; the |log-odds| ≥ 0.5 threshold is therefore a **conservative** test of heterogeneity.
@@ -113,6 +115,8 @@ detection_correct_itt = 1 if parsed = "no" else 0
 **S2 is interpreted as a conservative lower bound on detection** under the assumption that any abstention is equivalent to a missed violation. It is **not** a behavioral-equivalence claim that abstentions are semantically identical to incorrect "yes" responses (abstentions could reflect uncertainty, refusal, or format failure — distinct latent constructs not separated here).
 
 H1 is re-estimated with `detection_correct_itt` as the outcome on the full adversarial-chain dataset (no abstain exclusion). Pre-registered decision rule: if the H1 effect estimate using `detection_correct_itt` differs from the primary estimate by more than |log-odds| = 0.2, the ITT estimate becomes co-primary in reporting; otherwise the primary estimate stands and ITT is supplementary.
+
+**Causal attribution lock — intervention is semantic, formatting is orthogonal.** The intervention factor manipulates only the presence/absence of a domain-specific *constraint context paragraph* prepended to the chain (§3.2). It does **not** modify the output-format directive ("Answer with exactly one token: YES / NO …"), the parser, the token cap, or any retry-related behavior — those are held constant across baseline and intervention. Output-format and prompt-structure variation is captured *orthogonally* by the `marker` and `strict` factors of the 2×2×2 design (§4). Therefore any intervention main effect cannot be attributed solely to improved format-compliance under constrained output: format-related effects load on `marker` and `strict` (and their interactions with `intervention`), not on the `intervention` main effect itself.
 
 ### 1.3 Falsification rules
 
@@ -500,6 +504,8 @@ glmer(
 
 **H1 test.** Estimated marginal mean (EMM) of the **intervention contrast** across `regime_stratum` levels via `emmeans::emmeans(fit, ~intervention) |> contrast()`. Reported as: log-odds estimate of the contrast, 95% CI from profile likelihood, z-test p-value (one-sided since H1 is directional).
 
+**Marginal-weighting scheme (binding).** Marginal effects are computed with **equal weighting across `model × regime_stratum × cell` combinations**, not observation-weighted. This is `emmeans`' default `weights = "equal"` behavior and is specified explicitly via `emmeans(fit, ~intervention, weights = "equal")`. We choose equal weighting because (a) the regime composition of the panel is a study design choice, not a population property, and (b) cell sample sizes are intentionally balanced (100 chain pairs per cell). Observation weighting would let larger cells (or more numerous regime strata) dominate the estimate without scientific justification. The marginal estimand is therefore "the mean intervention effect a representative model–configuration in this panel would produce on a representative chain in a representative cell," not "the mean effect on the call-population this study sampled."
+
 **Non-convergence — pre-specified fallback hierarchy.** If `glmer` fails to converge after 100,000 iterations with `bobyqa`:
 
 | Step | Action | Rationale |
@@ -532,13 +538,20 @@ These 6 stratum-specific estimates are reported as **primary supplementary table
 
 **Pre-registered escalation rule.** If the largest pairwise difference between regime-stratified intervention effects exceeds |log-odds| = 0.5, the abstract and discussion **must** report the stratified estimates first and the panel-averaged second.
 
-**Per-model regime-shift coupling (formal exploratory test).** From the §6.3.2 full-panel reasoning-control run we obtain per-model ON-vs-OFF agreement rates `agreement_i` for the 13 models with a reasoning-disable flag. We pre-register the following exploratory regression of per-model H1 effects on these agreement rates:
+**Per-model regime-shift coupling (formal exploratory test).** From the §6.3.2 full-panel reasoning-control run we obtain per-model ON-vs-OFF agreement rates `agreement_i` for the 13 models with a reasoning-disable flag. We pre-register **two** exploratory descriptives of how per-model H1 effects relate to these agreement rates:
 
 ```r
+# (1) Linear coupling — interpretable but assumes structure we don't have
 lm(per_model_intervention_effect ~ agreement_rate, data = flag_models_only)
+
+# (2) Rank-based coupling — robust to outliers, monotonic-only assumption
+cor.test(per_model_intervention_effect, agreement_rate,
+         method = "spearman", data = flag_models_only)
 ```
 
-This is exploratory (only 13 of 22 models have agreement rates; not powered for inference); a slope significantly different from zero is reported as evidence that regime-shift sensitivity moderates the intervention effect. A null finding does **not** rescue interpretability — it bounds, not eliminates, the regime confound.
+Both are exploratory (only 13 of 22 models have agreement rates; not powered for inference). The Spearman correlation is the more defensible primary descriptive — it requires only monotonicity, not linearity, and is robust to the outliers visible in §6.3.2 (gpt-5.4-mini at 0% agreement, llama-3.3-70b at 100%). The linear regression is reported alongside for interpretability of effect-size magnitude.
+
+Pre-registered descriptive interpretation: a Spearman ρ in [-0.3, 0.3] is interpreted as no meaningful coupling between regime-sensitivity and intervention-effect-size; |ρ| ≥ 0.3 is reported as evidence that regime-shift sensitivity moderates the intervention effect. A null finding does **not** rescue interpretability — it bounds, not eliminates, the regime confound.
 
 ### 8.5 Specificity test (S1) and ITT-style test (S2)
 
