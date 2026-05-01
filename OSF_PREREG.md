@@ -14,8 +14,8 @@
 | Status | Pending OSF filing after final revision sign-off |
 | OSF DOI | _to be assigned at filing_ |
 | Filed at | _date of OSF submission_ |
-| Code commit hash | _to be inserted at filing time — `git rev-parse HEAD` after final commit_ |
-| Prompt corpus SHA-256 | _to be inserted at filing — hash of the frozen `prompt_corpus_v5_1.jsonl` artifact_ |
+| Code commit hash | `96047b7ae7fdf95232ab5e7f8bc3a3a3c3cfe177` (locked at filing) |
+| Prompt corpus SHA-256 | _generated at full-run launch — see §3.4_ |
 | Supersedes | SPEC.md §2.2, §2.3, §2.5, §3.1, §4.1, §5.3, §6, §7.1, §7.4, §8.2 — see §0 below |
 
 ---
