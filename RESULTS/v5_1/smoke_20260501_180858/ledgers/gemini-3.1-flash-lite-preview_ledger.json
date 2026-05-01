@@ -1,0 +1,11 @@
+{
+  "gemini-3.1-flash-lite-preview": {
+    "n_calls": 160,
+    "total_input_tokens": 92616,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.00699422,
+    "max_single_call_cost_usd": 4.7625e-05
+  }
+}

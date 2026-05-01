@@ -1,0 +1,14 @@
+{
+  "xiaomi/mimo-v2-pro": {
+    "n_calls": 160,
+    "total_input_tokens": 130712,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.04156,
+    "max_single_call_cost_usd": 0.0004284,
+    "resolved_providers": [
+      "xiaomi/mimo-v2-pro-20260318"
+    ]
+  }
+}

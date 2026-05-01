@@ -1,0 +1,14 @@
+{
+  "x-ai/grok-4.20": {
+    "n_calls": 160,
+    "total_input_tokens": 107544,
+    "total_output_tokens": 284,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.0962984,
+    "max_single_call_cost_usd": 0.00107655,
+    "resolved_providers": [
+      "x-ai/grok-4.20-20260309"
+    ]
+  }
+}

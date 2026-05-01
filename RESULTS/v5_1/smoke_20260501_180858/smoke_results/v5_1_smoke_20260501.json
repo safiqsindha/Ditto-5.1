@@ -1,0 +1,1546 @@
+{
+  "generated_at": "2026-05-01T18:46:14.195343+00:00",
+  "n_models": 23,
+  "models": {
+    "gpt-5.4-mini": {
+      "n_results": 80,
+      "total_cost_usd": 0.101235,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "openai_sync": 80
+      }
+    },
+    "gpt-5": {
+      "n_results": 80,
+      "total_cost_usd": 0.23866,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "openai_sync": 80
+      }
+    },
+    "gpt-5-mini": {
+      "n_results": 80,
+      "total_cost_usd": 0.038186,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "openai_sync": 80
+      }
+    },
+    "gemini-3.1-flash-lite-preview": {
+      "n_results": 80,
+      "total_cost_usd": 0.006994,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "google_batch": 80
+      }
+    },
+    "gemini-2.5-flash": {
+      "n_results": 80,
+      "total_cost_usd": 0.006994,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "google_batch": 80
+      }
+    },
+    "gemini-3-flash-preview": {
+      "n_results": 80,
+      "total_cost_usd": 0.01401,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 0.9,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 0.9,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "google_batch": 80
+      }
+    },
+    "claude-sonnet-4-6": {
+      "n_results": 80,
+      "total_cost_usd": 0.037968,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "anthropic_batch": 80
+      }
+    },
+    "claude-haiku-4-5-20251001": {
+      "n_results": 80,
+      "total_cost_usd": 0.037968,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "anthropic_batch": 80
+      }
+    },
+    "claude-sonnet-4-5": {
+      "n_results": 80,
+      "total_cost_usd": 0.038136,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 0.8,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 0.8,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 0.9,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 0.9,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "anthropic_batch": 80
+      }
+    },
+    "gemini-3.1-pro-preview": {
+      "n_results": 80,
+      "total_cost_usd": 0.23306,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "google_batch": 80
+      }
+    },
+    "kimi-k2.6": {
+      "n_results": 80,
+      "total_cost_usd": 0.036478,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "moonshot-direct"
+      ],
+      "route_distribution": {
+        "moonshot_direct": 80
+      }
+    },
+    "deepseek-v4-flash": {
+      "n_results": 80,
+      "total_cost_usd": 0.000401,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "deepseek_sync": 80
+      }
+    },
+    "deepseek-v4-pro": {
+      "n_results": 80,
+      "total_cost_usd": 0.001045,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 0.8,
+          "intervention_parse_rate": 0.7,
+          "baseline_parse_rate_lenient": 0.8,
+          "intervention_parse_rate_lenient": 0.7,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 0.7,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 0.7,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 0.8,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 0.8,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 0.9,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 0.9,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 0.9,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [],
+      "route_distribution": {
+        "deepseek_sync": 80
+      }
+    },
+    "meta-llama/llama-3.3-70b-instruct": {
+      "n_results": 80,
+      "total_cost_usd": 0.063497,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "meta-llama/llama-3.3-70b-instruct"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "x-ai/grok-4-fast": {
+      "n_results": 80,
+      "total_cost_usd": 0.015615,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "x-ai/grok-4-fast"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "x-ai/grok-4.20": {
+      "n_results": 80,
+      "total_cost_usd": 0.096298,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "x-ai/grok-4.20-20260309"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "qwen/qwen3.6-plus": {
+      "n_results": 80,
+      "total_cost_usd": 0.03056,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "qwen/qwen3.6-plus-04-02"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "xiaomi/mimo-v2.5-pro": {
+      "n_results": 80,
+      "total_cost_usd": 0.031742,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "xiaomi/mimo-v2.5-pro-20260422"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "qwen/qwen3.6-max-preview": {
+      "n_results": 80,
+      "total_cost_usd": 0.097793,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "qwen/qwen3.6-max-preview-20260420"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "z-ai/glm-5": {
+      "n_results": 80,
+      "total_cost_usd": 0.058134,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "z-ai/glm-5-20260211"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "xiaomi/mimo-v2-pro": {
+      "n_results": 80,
+      "total_cost_usd": 0.04156,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "xiaomi/mimo-v2-pro-20260318"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "z-ai/glm-4.7": {
+      "n_results": 80,
+      "total_cost_usd": 0.201562,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.1
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 1.0,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 1.0,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "z-ai/glm-4.7-20251222"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    },
+    "moonshotai/kimi-k2-thinking": {
+      "n_results": 80,
+      "total_cost_usd": 1.068953,
+      "parse_rates_by_condition": {
+        "baseline_marker_strict": {
+          "baseline_parse_rate": 0.9,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 0.9,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_marker_nonstrict": {
+          "baseline_parse_rate": 0.7,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 0.7,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_strict": {
+          "baseline_parse_rate": 0.7,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 0.7,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        },
+        "baseline_nomarker_nonstrict": {
+          "baseline_parse_rate": 0.9,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 0.9,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_strict": {
+          "baseline_parse_rate": 0.7,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 0.7,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_marker_nonstrict": {
+          "baseline_parse_rate": 0.6,
+          "intervention_parse_rate": 0.7,
+          "baseline_parse_rate_lenient": 0.6,
+          "intervention_parse_rate_lenient": 0.7,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_strict": {
+          "baseline_parse_rate": 1.0,
+          "intervention_parse_rate": 0.8,
+          "baseline_parse_rate_lenient": 1.0,
+          "intervention_parse_rate_lenient": 0.8,
+          "needed_retry_rate": 0.0
+        },
+        "intervention_nomarker_nonstrict": {
+          "baseline_parse_rate": 0.9,
+          "intervention_parse_rate": 0.7,
+          "baseline_parse_rate_lenient": 0.9,
+          "intervention_parse_rate_lenient": 0.7,
+          "needed_retry_rate": 0.0
+        }
+      },
+      "resolved_providers": [
+        "moonshotai/kimi-k2-thinking-20251106"
+      ],
+      "route_distribution": {
+        "openrouter": 80
+      }
+    }
+  }
+}

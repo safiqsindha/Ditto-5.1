@@ -1170,3 +1170,165 @@ Ran CoT on 50 of NBA's 119 intervention FPs and 50 of CSGO's 358 intervention FP
 The CoT findings are *mechanistic evidence* for the 4-tier hierarchy: NBA's residual FPs cluster in a single rule (shot-clock) attributable to a known renderer gap; CSGO's residual FPs cluster in two rules whose predicate variables aren't surfaced. The model doesn't fail randomly — it fails *exactly where the rule's required variables are absent from the chain*. This is the strongest evidence in v5 that the failure mode is representational, not reasoning-bound.
 
 ---
+
+## Decision D-46: v5.1 Build — Numbering Continuity + Task 1 (Harness Usage-Logging Fix) Complete
+
+**Date:** 2026-04-30
+
+**Numbering note:** The v5.1 BUILD_PLAN.md assigned D-45 to the clusters.json lock, but v5.0's log already used D-45 for the Phase D Final entry. v5.1 entries therefore start at D-46 and continue from here in this shared log. Reassigned entries: D-47 (clusters.json lock), D-48 (provider_pinning.json lock), D-49 (smoke results approved), D-50 (OSF DOI generated), D-51 (full run started), D-52 (full run completed), D-53 (analysis sign-off), D-54 (writeup posted).
+
+**Task 1 complete — harness usage-logging fix.**
+
+**Problem:** v5's `_extract_batch_text` and `_call_api` silently discarded `message.usage` blocks. v5.1 cannot run cost-aware without per-call token counts and cache stats.
+
+**Changes made to `src/harness/model_evaluator.py`:**
+- `_extract_batch_text` replaced by `_extract_batch_result` — returns `dict` with `text`, `input_tokens`, `output_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`
+- `_call_api` return type changed `str → dict` (same keys); private method, no external callers
+- `_submit_and_wait_batch` return type changed `dict[str, str] → dict[str, dict]`
+- `EvaluationResult` dataclass extended with 10 usage fields (5 per variant), all zero-defaulted for backward compatibility
+- New `__init__` param: `usage_log_path: Path | None` — if set, appends one JSON line per call to a JSONL sidecar
+- New private helpers: `_compute_cost(usage, is_batch) -> float`, `_log_usage(...)`, `_update_ledger(...)`
+- New public method: `flush_ledger(path: Path)` — persists cumulative cost ledger to JSON
+- Pricing constants `_HAIKU_RATES` added (Haiku 4.5: $0.80/$4.00/M input/output, $0.40/$2.00/M batch, $1.00/M cache write, $0.08/M cache read)
+- Dry-run path unchanged; usage fields remain zero for mock calls
+
+**Test result:** 34/34 existing tests pass.
+
+**Scope excluded from Task 1 (deferred to Task 5):**
+- OpenRouter `response["usage"]["cost"]` and `response["provider"]`
+- Per-provider pricing tables beyond Haiku 4.5
+- DeepSeek/OpenAI/Google usage parsing
+- Cost kill-switch enforcement
+- `cost_estimator.py` pricing update ($0.25/$1.25 stale vs. $0.80/$4.00 actual)
+
+**Reversibility:** Fully backward-compatible; usage fields default to zero; `usage_log_path` defaults to None.
+
+---
+
+## Decision D-47: clusters.json locked — CSGO + RL cluster definitions for cluster-robust SEs
+
+**Date:** 2026-04-30
+
+**Output:** `clusters.json` at repo root (v5.1 directory).
+
+**Method:** Extracted chain_id → source_hash mapping from the frozen Phase D batch archives (`RESULTS/phase_d_raw_batches/`). Chain_id format confirmed as `<source_hash>_sub<N>` (clean) and `<source_hash>_sub<N>_adv` (adversarial). Cluster_id = source_hash (everything before `_sub`).
+
+**Results (match BUILD_PLAN spec and cluster audit D-45):**
+- CSGO: 2399 chain_ids → 364 cluster IDs (clean 1200 + adversarial 1199; one adv chain absent per Phase D partial-run recovery)
+- RL: 2400 chain_ids → 148 cluster IDs (clean 1200 + adversarial 1200)
+- PUBG, NBA, Poker: 1:1 — cluster_id == chain_id; noted in meta block, no mapping table needed
+
+**Manifest sha256:** `77f6a603c2b779899172994d2b40f9ceaa40f8a0761b0531ae5a9c4e5bbdeeb1`
+
+**Acceptance criteria met:**
+- ✅ All 1,200 CSGO clean chain_ids map to one of 364 cluster IDs
+- ✅ All 1,200 RL clean chain_ids map to one of 148 cluster IDs
+- ✅ Both clean and adversarial sides covered (`_adv` suffix handled)
+- ✅ Fingerprint recorded above
+
+**Reversibility:** Locked from frozen batch archives; changes only if Phase D batches are re-run (they are frozen).
+
+---
+
+## Decision D-48: Task 4 complete — strict-grounding + no-marker prompt variant generators
+
+**Date:** 2026-04-30
+
+**Output:** `src/harness/prompt_variants.py`
+
+**Implementation:**
+- `add_strict_grounding(prompt, strict) -> str` — appends the SPEC-locked grounding instruction as a postfix. Does not modify any prompt corpus text.
+- `strip_markers(chain) -> ChainCandidate` — deep copy of chain with `_MARKER_KEYS` removed from each event's `location_context`. Strips exactly the keys that `_MarkerSurfacing.surface_markers()` renders as `NOTE=...` lines.
+- `build_eight_variants(clean_chain, adv_chain, builder) -> dict[str, PromptPair]` — produces all 8 condition labels in one call.
+
+**Verified on 10 random chains per cell:**
+- All 8 variants present for each chain
+- Strict suffix adds ~118 chars (~30 tokens) to every prompt
+- No-marker strips ~238 chars (~60 tokens) from PUBG adversarial intervention prompts (within SPEC 30–60 token range)
+- NBA no-marker delta = 0: correct, NBA uses numeric mutation (foul count), not NOTE markers
+- `strip_markers` on clean chain is a no-op: confirmed
+
+**Frozen text:** The strict-grounding instruction wording is in `_STRICT_SUFFIX` constant. Do not modify without SPEC amendment + both-author sign-off.
+
+**Reversibility:** Pure functions, no side effects on the frozen corpus.
+
+---
+
+## Decision D-49: SPEC sign-off — both authors, v5.1 build cleared to proceed
+
+**Date:** 2026-04-30
+
+**Event:** Both authors (Safiq, Myriam) have signed SPEC.md §16. This clears the gate for Task 5 (async parallel runner) and all downstream tasks.
+
+**What this sign-off authorizes:**
+- Task 5: async parallel runner build may begin
+- Task 6: smoke test may execute once Task 5 and Task 2 are complete
+- No methodology changes are permitted from this point without both-author re-signature
+
+**What remains before smoke test can run:**
+- Task 2: `provider_pinning.json` (OpenRouter key now available — running immediately)
+- Task 5: runner build (beginning immediately)
+- Smoke budget (~$10–15) approved by user
+
+**Downstream D-number reassignment** (updated from D-46 note):
+- D-50: smoke results approved
+- D-51: OSF DOI generated
+- D-52: full run started
+- D-53: full run completed
+- D-54: analysis sign-off
+- D-55: writeup posted
+
+---
+
+## Decision D-46: provider_pinning.json locked — all 14 OpenRouter models pinned
+
+**Date:** 2026-04-30
+
+**Event:** Task 2 complete. Queried `/api/v1/models/{model_id}/endpoints` for all 14 OR-routed models. Applied selection criteria: (1) highest quantization tier → (2) lowest price among uptime≥99% providers → (3) throughput adequacy. Wrote `provider_pinning.json` to v5.1 repo root.
+
+**SHA256 fingerprint:** `70ffbb21af16efee7fbd14b7adb584a471f34e489dfac9cab23037190f0dc9ad`
+
+**Selection summary:**
+| Model | Pinned provider | Quant | Rationale |
+|---|---|---|---|
+| x-ai/grok-4-fast | xAI | unknown | Only provider |
+| x-ai/grok-4 | xAI | unknown | Only provider |
+| x-ai/grok-4.20 | xAI | unknown | Only provider |
+| meta-llama/llama-3.3-70b-instruct | WandB | fp16 | Highest quant (fp16) at 100% uptime |
+| meta-llama/llama-4-maverick | DeepInfra | fp8 | Cheapest fp8 with uptime≥99% |
+| xiaomi/mimo-v2-pro | Xiaomi | fp8 | Only provider |
+| xiaomi/mimo-v2.5-pro | Xiaomi | fp8 | Only provider |
+| qwen/qwen3.6-plus | Alibaba | unknown | Only provider |
+| qwen/qwen3.6-max-preview | Alibaba | unknown | Only provider |
+| z-ai/glm-4.7 | Cerebras | fp16 | Only fp16 with uptime≥99%; all fp8 fail uptime |
+| z-ai/glm-5 | Baidu | fp8 | Cheapest fp8 with uptime≥99% |
+| minimax/minimax-m2.5 | DeepInfra | fp8 | Only uptime≥99% provider |
+| moonshotai/kimi-k2.6 | DeepInfra | fp4 | Best quant with uptime≥99%; fp8 (SiliconFlow) had 44% uptime |
+| moonshotai/kimi-k2-thinking | Novita | bf16 | Highest quant (bf16) with uptime≥99% |
+
+**Reversibility:** Provider pinning is per-run configuration. If a provider degrades, a new selection can be logged as D-46.1 with re-pinning rationale before the affected model's calls.
+
+---
+
+## Decision D-47: Task 5 runner infrastructure complete
+
+**Date:** 2026-04-30
+
+**Event:** Four runner files written to `src/harness/`:
+- `runner_native.py` — AnthropicRunner (wraps ModelEvaluator), OpenAIRunner (Batches+sync), GoogleRunner (Batch+sync), DeepSeekRunner (sync, off-peak enforced)
+- `runner_openrouter.py` — OpenRouterRunner (provider-pinned, allow_fallbacks=false, usage logging)
+- `runner_orchestrator.py` — RunnerOrchestrator (all-model dispatch, kill-switch at 110% of $5.91 mean allocation, provider drift detection, DeepSeek off-peak scheduling)
+- `run_v5_1_replication.py` — CLI entry point (smoke/full mode, --model/--cell/--condition filters)
+
+**Key implementation decisions:**
+- V51Result replaces EvaluationResult for v5.1 cross-model results (adds condition, model_id, resolved_provider fields)
+- DeepSeekPeakHoursError raised for out-of-window calls; orchestrator parks and retries when window opens
+- ProviderDriftError raised when resolved provider ≠ pinned provider (drift_action="error" by default)
+- Kill-switch threshold: $5.91 × 1.10 = $6.50 per model (based on $189 total / 32 models)
+- Smoke test: 32 models × 8 conditions × CSGO × 10 chain pairs = 5,120 calls
+
+**8-condition correctness:** All 8 conditions are handled correctly. `run_v5_1_replication.py` runs v5's full data pipeline → T function → FixedPerCellChainBuilder → INJECTORS (per cell) to get (clean, adv) ChainCandidate pairs. `build_eight_variants(clean, adv, builder)` is then called, which builds PromptPairs for both sides of each condition (clean-no-context, clean-with-context, adv-no-context, adv-with-context) from the ChainCandidate objects. The "intervention" conditions correctly use (clean-WITH-context, adv-WITH-context) as the pair sides.
+
+**Reversibility:** These files are new additions; v5's existing harness is untouched.
+
+---

@@ -1,0 +1,14 @@
+{
+  "meta-llama/llama-3.3-70b-instruct": {
+    "n_calls": 160,
+    "total_input_tokens": 89112,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.06349672,
+    "max_single_call_cost_usd": 0.00043026,
+    "resolved_providers": [
+      "meta-llama/llama-3.3-70b-instruct"
+    ]
+  }
+}

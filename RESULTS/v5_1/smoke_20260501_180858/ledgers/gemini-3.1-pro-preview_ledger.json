@@ -1,0 +1,11 @@
+{
+  "gemini-3.1-pro-preview": {
+    "n_calls": 160,
+    "total_input_tokens": 92616,
+    "total_output_tokens": 152,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.23306,
+    "max_single_call_cost_usd": 0.0015875000000000002
+  }
+}

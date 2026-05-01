@@ -1,0 +1,11 @@
+{
+  "claude-sonnet-4-5": {
+    "n_calls": 160,
+    "total_input_tokens": 91720,
+    "total_output_tokens": 724,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.038136,
+    "max_single_call_cost_usd": 0.0002888
+  }
+}

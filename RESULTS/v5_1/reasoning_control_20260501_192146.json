@@ -1,0 +1,2301 @@
+{
+  "generated_at": "2026-05-01T19:21:46.319202+00:00",
+  "n_chains_per_model": 25,
+  "elapsed_s": 316.7,
+  "models": [
+    {
+      "model_id": "qwen/qwen3.6-plus",
+      "pinned_provider": "Alibaba",
+      "n": 25,
+      "n_errors_on": 0,
+      "n_errors_off": 0,
+      "strict_agreement": 0.76,
+      "lenient_agreement": 0.76,
+      "on_distribution": {
+        "yes": 8,
+        "no": 17
+      },
+      "off_distribution": {
+        "yes": 12,
+        "no": 13
+      },
+      "median_latency_on_s": 44.5,
+      "median_latency_off_s": 0.93,
+      "median_tokens_on": 2388,
+      "median_tokens_off": 1,
+      "samples": [
+        {
+          "idx": 0,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 3352,
+            "elapsed_s": 62.02
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 1.01
+          }
+        },
+        {
+          "idx": 1,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 996,
+            "elapsed_s": 19.4
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 0.85
+          }
+        },
+        {
+          "idx": 2,
+          "label": "valid",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 4656,
+            "elapsed_s": 85.28
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.81
+          }
+        },
+        {
+          "idx": 3,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 676,
+            "elapsed_s": 13.38
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 1.21
+          }
+        },
+        {
+          "idx": 4,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 5575,
+            "elapsed_s": 101.97
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.81
+          }
+        },
+        {
+          "idx": 5,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 1070,
+            "elapsed_s": 20.61
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 1.66
+          }
+        },
+        {
+          "idx": 6,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 2388,
+            "elapsed_s": 44.5
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 1.06
+          }
+        },
+        {
+          "idx": 7,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 1054,
+            "elapsed_s": 20.45
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 0.93
+          }
+        },
+        {
+          "idx": 8,
+          "label": "valid",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 11938,
+            "elapsed_s": 215.69
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 1.07
+          }
+        },
+        {
+          "idx": 9,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 572,
+            "elapsed_s": 11.12
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 1.06
+          }
+        },
+        {
+          "idx": 10,
+          "label": "valid",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 4068,
+            "elapsed_s": 74.08
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.87
+          }
+        },
+        {
+          "idx": 11,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 908,
+            "elapsed_s": 17.18
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 0.83
+          }
+        },
+        {
+          "idx": 12,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 3760,
+            "elapsed_s": 68.41
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.95
+          }
+        },
+        {
+          "idx": 13,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 1006,
+            "elapsed_s": 19.21
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 0.86
+          }
+        },
+        {
+          "idx": 14,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 4218,
+            "elapsed_s": 77.64
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.85
+          }
+        },
+        {
+          "idx": 15,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 809,
+            "elapsed_s": 15.33
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 1.11
+          }
+        },
+        {
+          "idx": 16,
+          "label": "valid",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 2870,
+            "elapsed_s": 52.52
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.9
+          }
+        },
+        {
+          "idx": 17,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 830,
+            "elapsed_s": 15.71
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 0.82
+          }
+        },
+        {
+          "idx": 18,
+          "label": "valid",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 2623,
+            "elapsed_s": 48.34
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 1.18
+          }
+        },
+        {
+          "idx": 19,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 793,
+            "elapsed_s": 15.16
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 0.9
+          }
+        },
+        {
+          "idx": 20,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 3293,
+            "elapsed_s": 60.38
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 1.06
+          }
+        },
+        {
+          "idx": 21,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 1001,
+            "elapsed_s": 21.15
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 0.86
+          }
+        },
+        {
+          "idx": 22,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 4103,
+            "elapsed_s": 75.93
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.87
+          }
+        },
+        {
+          "idx": 23,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 280,
+            "tokens_out": 751,
+            "elapsed_s": 14.36
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 282,
+            "tokens_out": 1,
+            "elapsed_s": 1.09
+          }
+        },
+        {
+          "idx": 24,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 285,
+            "tokens_out": 3670,
+            "elapsed_s": 67.17
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 287,
+            "tokens_out": 1,
+            "elapsed_s": 0.95
+          }
+        }
+      ]
+    },
+    {
+      "model_id": "z-ai/glm-4.7",
+      "pinned_provider": "Cerebras",
+      "n": 25,
+      "n_errors_on": 0,
+      "n_errors_off": 0,
+      "strict_agreement": 0.52,
+      "lenient_agreement": 0.52,
+      "on_distribution": {
+        "abstain": 12,
+        "no": 11,
+        "yes": 2
+      },
+      "off_distribution": {
+        "yes": 13,
+        "no": 12
+      },
+      "median_latency_on_s": 1.92,
+      "median_latency_off_s": 0.19,
+      "median_tokens_on": 980,
+      "median_tokens_off": 2,
+      "samples": [
+        {
+          "idx": 0,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.16
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.31
+          }
+        },
+        {
+          "idx": 1,
+          "label": "broken",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 273,
+            "tokens_out": 1024,
+            "elapsed_s": 2.72
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.25
+          }
+        },
+        {
+          "idx": 2,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.23
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.26
+          }
+        },
+        {
+          "idx": 3,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 785,
+            "elapsed_s": 1.78
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.45
+          }
+        },
+        {
+          "idx": 4,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 917,
+            "elapsed_s": 1.92
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.21
+          }
+        },
+        {
+          "idx": 5,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 625,
+            "elapsed_s": 1.64
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.53
+          }
+        },
+        {
+          "idx": 6,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 753,
+            "elapsed_s": 1.46
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.16
+          }
+        },
+        {
+          "idx": 7,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 681,
+            "elapsed_s": 1.75
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.18
+          }
+        },
+        {
+          "idx": 8,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 1.83
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.17
+          }
+        },
+        {
+          "idx": 9,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 583,
+            "elapsed_s": 1.31
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.18
+          }
+        },
+        {
+          "idx": 10,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.08
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.19
+          }
+        },
+        {
+          "idx": 11,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 714,
+            "elapsed_s": 1.44
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.18
+          }
+        },
+        {
+          "idx": 12,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.0
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.17
+          }
+        },
+        {
+          "idx": 13,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 645,
+            "elapsed_s": 1.49
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.22
+          }
+        },
+        {
+          "idx": 14,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.5
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.17
+          }
+        },
+        {
+          "idx": 15,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 980,
+            "elapsed_s": 2.08
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.31
+          }
+        },
+        {
+          "idx": 16,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.04
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.48
+          }
+        },
+        {
+          "idx": 17,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 659,
+            "elapsed_s": 1.15
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.22
+          }
+        },
+        {
+          "idx": 18,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.37
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.27
+          }
+        },
+        {
+          "idx": 19,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 643,
+            "elapsed_s": 1.61
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.18
+          }
+        },
+        {
+          "idx": 20,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.14
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.16
+          }
+        },
+        {
+          "idx": 21,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 872,
+            "elapsed_s": 1.86
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.21
+          }
+        },
+        {
+          "idx": 22,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.01
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.19
+          }
+        },
+        {
+          "idx": 23,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 458,
+            "elapsed_s": 1.03
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 273,
+            "tokens_out": 2,
+            "elapsed_s": 0.19
+          }
+        },
+        {
+          "idx": 24,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 272,
+            "tokens_out": 1024,
+            "elapsed_s": 2.34
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 272,
+            "tokens_out": 2,
+            "elapsed_s": 0.18
+          }
+        }
+      ]
+    },
+    {
+      "model_id": "xiaomi/mimo-v2-pro",
+      "pinned_provider": "Xiaomi",
+      "n": 25,
+      "n_errors_on": 0,
+      "n_errors_off": 0,
+      "strict_agreement": 0.44,
+      "lenient_agreement": 0.44,
+      "on_distribution": {
+        "yes": 2,
+        "no": 10,
+        "abstain": 13
+      },
+      "off_distribution": {
+        "yes": 9,
+        "no": 16
+      },
+      "median_latency_on_s": 18.51,
+      "median_latency_off_s": 1.9,
+      "median_tokens_on": 1024,
+      "median_tokens_off": 2,
+      "samples": [
+        {
+          "idx": 0,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 522,
+            "tokens_out": 273,
+            "elapsed_s": 14.17
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 1.31
+          }
+        },
+        {
+          "idx": 1,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 749,
+            "elapsed_s": 15.73
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 1.9
+          }
+        },
+        {
+          "idx": 2,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 26.61
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 2.09
+          }
+        },
+        {
+          "idx": 3,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 871,
+            "elapsed_s": 17.61
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 0.8
+          }
+        },
+        {
+          "idx": 4,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 27.1
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 1.58
+          }
+        },
+        {
+          "idx": 5,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 160,
+            "elapsed_s": 6.59
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 5.58
+          }
+        },
+        {
+          "idx": 6,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 25.41
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 2.46
+          }
+        },
+        {
+          "idx": 7,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 672,
+            "elapsed_s": 14.73
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 2.8
+          }
+        },
+        {
+          "idx": 8,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 21.07
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 3.07
+          }
+        },
+        {
+          "idx": 9,
+          "label": "broken",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 517,
+            "tokens_out": 1024,
+            "elapsed_s": 20.59
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 1.88
+          }
+        },
+        {
+          "idx": 10,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 18.51
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 1.76
+          }
+        },
+        {
+          "idx": 11,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 996,
+            "elapsed_s": 18.52
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 1.8
+          }
+        },
+        {
+          "idx": 12,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 18.64
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 2.2
+          }
+        },
+        {
+          "idx": 13,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 640,
+            "elapsed_s": 14.05
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 3.73
+          }
+        },
+        {
+          "idx": 14,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 26.62
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 2.64
+          }
+        },
+        {
+          "idx": 15,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 1004,
+            "elapsed_s": 20.22
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 2.47
+          }
+        },
+        {
+          "idx": 16,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 522,
+            "tokens_out": 256,
+            "elapsed_s": 6.91
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 4.51
+          }
+        },
+        {
+          "idx": 17,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 733,
+            "elapsed_s": 15.79
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 1.53
+          }
+        },
+        {
+          "idx": 18,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 25.21
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 1.43
+          }
+        },
+        {
+          "idx": 19,
+          "label": "broken",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 517,
+            "tokens_out": 1024,
+            "elapsed_s": 25.55
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 1.03
+          }
+        },
+        {
+          "idx": 20,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 17.9
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 2.51
+          }
+        },
+        {
+          "idx": 21,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 256,
+            "elapsed_s": 8.15
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 1.35
+          }
+        },
+        {
+          "idx": 22,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 18.25
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 8.07
+          }
+        },
+        {
+          "idx": 23,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 517,
+            "tokens_out": 735,
+            "elapsed_s": 14.09
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 519,
+            "tokens_out": 2,
+            "elapsed_s": 1.29
+          }
+        },
+        {
+          "idx": 24,
+          "label": "valid",
+          "on": {
+            "text": "",
+            "parsed_strict": "abstain",
+            "parsed_lenient": "abstain",
+            "finish_reason": "length",
+            "tokens_in": 522,
+            "tokens_out": 1024,
+            "elapsed_s": 19.42
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 524,
+            "tokens_out": 2,
+            "elapsed_s": 1.78
+          }
+        }
+      ]
+    },
+    {
+      "model_id": "meta-llama/llama-3.3-70b-instruct",
+      "pinned_provider": "WandB",
+      "n": 25,
+      "n_errors_on": 0,
+      "n_errors_off": 0,
+      "strict_agreement": 1.0,
+      "lenient_agreement": 1.0,
+      "on_distribution": {
+        "yes": 13,
+        "no": 12
+      },
+      "off_distribution": {
+        "yes": 13,
+        "no": 12
+      },
+      "median_latency_on_s": 0.14,
+      "median_latency_off_s": 0.13,
+      "median_tokens_on": 2,
+      "median_tokens_off": 2,
+      "samples": [
+        {
+          "idx": 0,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.3
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          }
+        },
+        {
+          "idx": 1,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.3
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.14
+          }
+        },
+        {
+          "idx": 2,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.62
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.3
+          }
+        },
+        {
+          "idx": 3,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.19
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          }
+        },
+        {
+          "idx": 4,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.34
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.11
+          }
+        },
+        {
+          "idx": 5,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.35
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.18
+          }
+        },
+        {
+          "idx": 6,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.3
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.14
+          }
+        },
+        {
+          "idx": 7,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.25
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          }
+        },
+        {
+          "idx": 8,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.14
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          }
+        },
+        {
+          "idx": 9,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.19
+          }
+        },
+        {
+          "idx": 10,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.1
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          }
+        },
+        {
+          "idx": 11,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.14
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.14
+          }
+        },
+        {
+          "idx": 12,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.15
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.17
+          }
+        },
+        {
+          "idx": 13,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          }
+        },
+        {
+          "idx": 14,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.11
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          }
+        },
+        {
+          "idx": 15,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          }
+        },
+        {
+          "idx": 16,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          }
+        },
+        {
+          "idx": 17,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          }
+        },
+        {
+          "idx": 18,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.11
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.11
+          }
+        },
+        {
+          "idx": 19,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.16
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.15
+          }
+        },
+        {
+          "idx": 20,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.14
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.15
+          }
+        },
+        {
+          "idx": 21,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.16
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          }
+        },
+        {
+          "idx": 22,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.12
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.13
+          }
+        },
+        {
+          "idx": 23,
+          "label": "broken",
+          "on": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.1
+          },
+          "off": {
+            "text": "NO",
+            "parsed_strict": "no",
+            "parsed_lenient": "no",
+            "finish_reason": "stop",
+            "tokens_in": 279,
+            "tokens_out": 2,
+            "elapsed_s": 0.1
+          }
+        },
+        {
+          "idx": 24,
+          "label": "valid",
+          "on": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.11
+          },
+          "off": {
+            "text": "YES",
+            "parsed_strict": "yes",
+            "parsed_lenient": "yes",
+            "finish_reason": "stop",
+            "tokens_in": 278,
+            "tokens_out": 2,
+            "elapsed_s": 0.11
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "deepseek-v4-flash": {
+    "n_calls": 160,
+    "total_input_tokens": 88224,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 78848,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.00040064,
+    "max_single_call_cost_usd": 5.1600000000000006e-06
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "kimi-k2.6": {
+    "n_calls": 160,
+    "total_input_tokens": 89536,
+    "total_output_tokens": 640,
+    "total_cache_read_tokens": 64736,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.03647776,
+    "max_single_call_cost_usd": 0.00059645
+  }
+}

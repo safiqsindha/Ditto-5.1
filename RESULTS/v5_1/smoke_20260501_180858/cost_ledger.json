@@ -1,0 +1,209 @@
+{
+  "meta-llama/llama-3.3-70b-instruct": {
+    "n_calls": 160,
+    "total_input_tokens": 89112,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.06349672,
+    "max_single_call_cost_usd": 0.00043026
+  },
+  "kimi-k2.6": {
+    "n_calls": 160,
+    "total_input_tokens": 89536,
+    "total_output_tokens": 640,
+    "total_cache_read_tokens": 64736,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.03647776,
+    "max_single_call_cost_usd": 0.00059645
+  },
+  "gpt-5.4-mini": {
+    "n_calls": 160,
+    "total_input_tokens": 89064,
+    "total_output_tokens": 742,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.1012352,
+    "max_single_call_cost_usd": 0.0006908
+  },
+  "x-ai/grok-4-fast": {
+    "n_calls": 160,
+    "total_input_tokens": 114904,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.0156154,
+    "max_single_call_cost_usd": 0.0001304
+  },
+  "x-ai/grok-4.20": {
+    "n_calls": 160,
+    "total_input_tokens": 107544,
+    "total_output_tokens": 284,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.0962984,
+    "max_single_call_cost_usd": 0.00107655
+  },
+  "gpt-5": {
+    "n_calls": 160,
+    "total_input_tokens": 89064,
+    "total_output_tokens": 1600,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.23866,
+    "max_single_call_cost_usd": 0.0016250000000000001
+  },
+  "gpt-5-mini": {
+    "n_calls": 160,
+    "total_input_tokens": 89064,
+    "total_output_tokens": 1600,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.0381856,
+    "max_single_call_cost_usd": 0.00026
+  },
+  "qwen/qwen3.6-plus": {
+    "n_calls": 160,
+    "total_input_tokens": 93072,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.03056042,
+    "max_single_call_cost_usd": 0.000206375
+  },
+  "xiaomi/mimo-v2.5-pro": {
+    "n_calls": 160,
+    "total_input_tokens": 131032,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.0317424,
+    "max_single_call_cost_usd": 0.0002306
+  },
+  "qwen/qwen3.6-max-preview": {
+    "n_calls": 160,
+    "total_input_tokens": 93072,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.09779328,
+    "max_single_call_cost_usd": 0.0006604
+  },
+  "z-ai/glm-5": {
+    "n_calls": 160,
+    "total_input_tokens": 89192,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.0581336,
+    "max_single_call_cost_usd": 0.00043008
+  },
+  "xiaomi/mimo-v2-pro": {
+    "n_calls": 160,
+    "total_input_tokens": 130712,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.04156,
+    "max_single_call_cost_usd": 0.0004284
+  },
+  "gemini-3.1-flash-lite-preview": {
+    "n_calls": 160,
+    "total_input_tokens": 92616,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.00699422,
+    "max_single_call_cost_usd": 4.7625e-05
+  },
+  "gemini-2.5-flash": {
+    "n_calls": 160,
+    "total_input_tokens": 92616,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.00699422,
+    "max_single_call_cost_usd": 4.7625e-05
+  },
+  "deepseek-v4-flash": {
+    "n_calls": 160,
+    "total_input_tokens": 88224,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 78848,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.00040064,
+    "max_single_call_cost_usd": 5.1600000000000006e-06
+  },
+  "gemini-3-flash-preview": {
+    "n_calls": 160,
+    "total_input_tokens": 92616,
+    "total_output_tokens": 196,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.01401,
+    "max_single_call_cost_usd": 0.0001086
+  },
+  "claude-sonnet-4-6": {
+    "n_calls": 160,
+    "total_input_tokens": 91720,
+    "total_output_tokens": 640,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.037968,
+    "max_single_call_cost_usd": 0.000258
+  },
+  "claude-haiku-4-5-20251001": {
+    "n_calls": 160,
+    "total_input_tokens": 91720,
+    "total_output_tokens": 640,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.037968,
+    "max_single_call_cost_usd": 0.000258
+  },
+  "deepseek-v4-pro": {
+    "n_calls": 160,
+    "total_input_tokens": 88224,
+    "total_output_tokens": 1387,
+    "total_cache_read_tokens": 78848,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.00104468,
+    "max_single_call_cost_usd": 3.437e-05
+  },
+  "claude-sonnet-4-5": {
+    "n_calls": 160,
+    "total_input_tokens": 91720,
+    "total_output_tokens": 724,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.038136,
+    "max_single_call_cost_usd": 0.0002888
+  },
+  "z-ai/glm-4.7": {
+    "n_calls": 160,
+    "total_input_tokens": 89192,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.201562,
+    "max_single_call_cost_usd": 0.0013735
+  },
+  "gemini-3.1-pro-preview": {
+    "n_calls": 160,
+    "total_input_tokens": 92616,
+    "total_output_tokens": 152,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.23306,
+    "max_single_call_cost_usd": 0.0015875000000000002
+  },
+  "moonshotai/kimi-k2-thinking": {
+    "n_calls": 160,
+    "total_input_tokens": 89536,
+    "total_output_tokens": 409202,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 1.06895285,
+    "max_single_call_cost_usd": 0.0456008
+  }
+}

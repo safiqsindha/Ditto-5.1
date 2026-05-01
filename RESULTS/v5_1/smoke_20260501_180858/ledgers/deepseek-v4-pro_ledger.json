@@ -1,0 +1,11 @@
+{
+  "deepseek-v4-pro": {
+    "n_calls": 160,
+    "total_input_tokens": 88224,
+    "total_output_tokens": 1387,
+    "total_cache_read_tokens": 78848,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.00104468,
+    "max_single_call_cost_usd": 3.437e-05
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "qwen/qwen3.6-max-preview": {
+    "n_calls": 160,
+    "total_input_tokens": 93072,
+    "total_output_tokens": 160,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.09779328,
+    "max_single_call_cost_usd": 0.0006604,
+    "resolved_providers": [
+      "qwen/qwen3.6-max-preview-20260420"
+    ]
+  }
+}

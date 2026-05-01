@@ -1,0 +1,14 @@
+{
+  "moonshotai/kimi-k2-thinking": {
+    "n_calls": 160,
+    "total_input_tokens": 89536,
+    "total_output_tokens": 409202,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 1.06895285,
+    "max_single_call_cost_usd": 0.0456008,
+    "resolved_providers": [
+      "moonshotai/kimi-k2-thinking-20251106"
+    ]
+  }
+}

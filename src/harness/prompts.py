@@ -186,7 +186,10 @@ def _build_actor_map(events: list) -> dict[str, str]:
 
 _CLASSIFY_QUESTION = (
     "Is the sequence of events above consistent with the rules of {domain}?\n"
-    "Reply with exactly one word: YES or NO."
+    "Answer with exactly one token:\n"
+    "YES\n"
+    "NO\n"
+    "If you output anything else, the answer is invalid."
 )
 
 

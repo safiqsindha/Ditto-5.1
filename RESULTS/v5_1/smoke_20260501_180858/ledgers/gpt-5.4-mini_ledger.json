@@ -1,0 +1,11 @@
+{
+  "gpt-5.4-mini": {
+    "n_calls": 160,
+    "total_input_tokens": 89064,
+    "total_output_tokens": 742,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.1012352,
+    "max_single_call_cost_usd": 0.0006908
+  }
+}

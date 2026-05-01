@@ -1,0 +1,14 @@
+{
+  "z-ai/glm-4.7": {
+    "n_calls": 160,
+    "total_input_tokens": 89192,
+    "total_output_tokens": 320,
+    "total_cache_read_tokens": 0,
+    "total_cache_creation_tokens": 0,
+    "total_cost_usd": 0.201562,
+    "max_single_call_cost_usd": 0.0013735,
+    "resolved_providers": [
+      "z-ai/glm-4.7-20251222"
+    ]
+  }
+}
