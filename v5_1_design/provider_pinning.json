@@ -1,0 +1,180 @@
+{
+  "_meta": {
+    "generated_at": "2026-04-30T00:00:00Z",
+    "selection_criteria": [
+      "1. Highest quantization tier (fp16 > bf16 > fp8 > fp4 > int8 > int4 > unknown)",
+      "2. Lowest price among providers at the highest quantization with uptime >= 99%",
+      "3. Throughput >= smoke-test rate (low bar; all selected providers clear it)",
+      "4. uptime_last_30m field from OpenRouter /endpoints response"
+    ],
+    "note": "pinned_provider matches the provider_name field from OR /endpoints; used in provider.order with allow_fallbacks=false"
+  },
+  "x-ai/grok-4-fast": {
+    "pinned_provider": "xAI",
+    "provider_tag": "xai",
+    "quantization": "unknown",
+    "input_price_per_m": 0.20,
+    "output_price_per_m": 0.50,
+    "context_length": 2000000,
+    "uptime_last_30m": 99.97,
+    "throughput_p50_tps": 62,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider serving this model; native xAI endpoint"
+  },
+  "x-ai/grok-4": {
+    "pinned_provider": "xAI",
+    "provider_tag": "xai",
+    "quantization": "unknown",
+    "input_price_per_m": 3.00,
+    "output_price_per_m": 15.00,
+    "context_length": 256000,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 35,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider serving this model; native xAI endpoint"
+  },
+  "x-ai/grok-4.20": {
+    "pinned_provider": "xAI",
+    "provider_tag": "xai",
+    "quantization": "unknown",
+    "input_price_per_m": 1.25,
+    "output_price_per_m": 2.50,
+    "context_length": 2000000,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 59,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider serving this model; native xAI endpoint"
+  },
+  "meta-llama/llama-3.3-70b-instruct": {
+    "pinned_provider": "WandB",
+    "provider_tag": "wandb",
+    "quantization": "fp16",
+    "input_price_per_m": 0.71,
+    "output_price_per_m": 0.71,
+    "context_length": 128000,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 75,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Highest quantization (fp16) among uptime>=99% providers; 15 providers available"
+  },
+  "meta-llama/llama-4-maverick": {
+    "pinned_provider": "DeepInfra",
+    "provider_tag": "deepinfra",
+    "quantization": "fp8",
+    "input_price_per_m": 0.15,
+    "output_price_per_m": 0.60,
+    "context_length": 1048576,
+    "uptime_last_30m": 99.93,
+    "throughput_p50_tps": 34,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Cheapest fp8 with uptime>=99%; Novita fp8 fails uptime (97.6%)"
+  },
+  "xiaomi/mimo-v2-pro": {
+    "pinned_provider": "Xiaomi",
+    "provider_tag": "xiaomi",
+    "quantization": "fp8",
+    "input_price_per_m": 1.00,
+    "output_price_per_m": 3.00,
+    "context_length": 1048576,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 34,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider serving this model; native Xiaomi endpoint"
+  },
+  "xiaomi/mimo-v2.5-pro": {
+    "pinned_provider": "Xiaomi",
+    "provider_tag": "xiaomi",
+    "quantization": "fp8",
+    "input_price_per_m": 1.00,
+    "output_price_per_m": 3.00,
+    "context_length": 1048576,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 41,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider serving this model; native Xiaomi endpoint"
+  },
+  "qwen/qwen3.6-plus": {
+    "pinned_provider": "Alibaba",
+    "provider_tag": "alibaba",
+    "quantization": "unknown",
+    "input_price_per_m": 0.33,
+    "output_price_per_m": 1.95,
+    "context_length": 1000000,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 44,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider serving this model; native Alibaba endpoint"
+  },
+  "qwen/qwen3.6-max-preview": {
+    "pinned_provider": "Alibaba",
+    "provider_tag": "alibaba",
+    "quantization": "unknown",
+    "input_price_per_m": 1.04,
+    "output_price_per_m": 6.24,
+    "context_length": 262144,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 31,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider serving this model; native Alibaba endpoint"
+  },
+  "z-ai/glm-4.7": {
+    "pinned_provider": "Cerebras",
+    "provider_tag": "cerebras",
+    "quantization": "fp16",
+    "input_price_per_m": 2.25,
+    "output_price_per_m": 2.75,
+    "context_length": 131072,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 55,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only fp16 provider with uptime>=99%; all fp8 options fail uptime (AtlasCloud 98.3%, Parasail 96.7%, Novita 96.7%)"
+  },
+  "z-ai/glm-5": {
+    "pinned_provider": "Baidu",
+    "provider_tag": "baidu",
+    "quantization": "fp8",
+    "input_price_per_m": 0.70,
+    "output_price_per_m": 2.24,
+    "context_length": 202752,
+    "uptime_last_30m": 100.00,
+    "throughput_p50_tps": 37,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Cheapest fp8 with uptime>=99%; GMICloud fp8 fails uptime (97.5%)"
+  },
+  "minimax/minimax-m2.5": {
+    "pinned_provider": "DeepInfra",
+    "provider_tag": "deepinfra",
+    "quantization": "fp8",
+    "input_price_per_m": 0.15,
+    "output_price_per_m": 1.15,
+    "context_length": 196608,
+    "uptime_last_30m": 99.98,
+    "throughput_p50_tps": 17,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Only provider with uptime>=99% for this model"
+  },
+  "moonshotai/kimi-k2.6": {
+    "pinned_provider": "Novita",
+    "provider_tag": "novita",
+    "quantization": "unknown",
+    "input_price_per_m": 0.95,
+    "output_price_per_m": 4.00,
+    "context_length": 262144,
+    "uptime_last_30m": 99.0,
+    "throughput_p50_tps": 0,
+    "selected_at": "2026-05-01T03:45:00Z",
+    "rationale": "Re-pinned from DeepInfra → Novita on 2026-05-01. DeepInfra repeatedly hit retry-exhaustion in smoke runs (capacity-bound). Novita already serves kimi-k2-thinking with zero 429s in same workload, providing within-family infra consistency."
+  },
+  "moonshotai/kimi-k2-thinking": {
+    "pinned_provider": "Novita",
+    "provider_tag": "novita",
+    "quantization": "bf16",
+    "input_price_per_m": 0.60,
+    "output_price_per_m": 2.50,
+    "context_length": 262144,
+    "uptime_last_30m": 99.88,
+    "throughput_p50_tps": 27,
+    "selected_at": "2026-04-30T00:00:00Z",
+    "rationale": "Highest quantization (bf16) with uptime>=99%; AtlasCloud int4 disqualified by lower quantization"
+  }
+}

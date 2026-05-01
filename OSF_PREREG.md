@@ -649,9 +649,9 @@ Once filed, **no model may be added or removed from the panel** based on subsequ
 | Artifact | Location | SHA-256 hash | Status |
 |---|---|---|---|
 | Pre-registration document | `OSF_PREREG.md` | _filled at filing_ | Frozen at OSF filing |
-| Specification | `../Ditto V5.1/SPEC.md` | _filled at filing_ | Frozen at OSF filing |
+| Specification | `v5_1_design/SPEC.md` | _filled at filing_ | Frozen at OSF filing |
 | Pipeline + harness code | Repository at commit hash `<TBD>` | _git rev-parse HEAD_ | Frozen at OSF filing |
-| Provider pinning configuration | `../Ditto V5.1/provider_pinning.json` | _filled at filing_ | Frozen at OSF filing |
+| Provider pinning configuration | `v5_1_design/provider_pinning.json` | _filled at filing_ | Frozen at OSF filing |
 | Frozen prompt corpus (4,000 prompts) | `prompt_corpus_v5_1.jsonl` | _filled before launch_ | Generated and hashed before full run |
 | Smoke validation runs (1 final + per-iteration changelog) | `results/v5_1/smoke_*` + `results/v5_1/SMOKE_CHANGELOG.md` | n/a (timestamped) | Public on OSF |
 | Reasoning-control pilot | `results/v5_1/reasoning_control_20260501_192146.json` | _filled at filing_ | Public on OSF |
