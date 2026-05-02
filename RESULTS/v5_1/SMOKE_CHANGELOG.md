@@ -143,3 +143,29 @@ A pre-filing expansion to all 13 flag-bearing panel models was committed in §6.
 | OpenAI sync in smoke (batch in full run) | Smoke #4 — batch long-tail | §6.2 |
 
 All exclusions and parameter choices are exploratory in origin. The §2.4 inclusion criteria are forward-looking generalisations from this smoke evidence, not pre-specifications independent of it. This distinction is preserved transparently in the prereg.
+
+---
+
+## Pre-launch infrastructure change (post-prereg-lock, no design impact)
+
+### 2026-05-01 — OpenRouter dual-key split for Phase 2 wall-time reduction
+
+**Trigger:** Smoke #5 confirmed the 9 OR models share a single per-key OR rate budget (~5 RPS aggregate via the shared `TokenBucket` in `rate_limiter.py`). Extrapolated full-run wall time on a single key was ~5 hours, bottlenecked by OR rate-limiting rather than model latency. None of the prereg's locked design surfaces (model panel, prompts, parser, hypotheses, statistical plan) are affected — this is a throughput-only orchestration change.
+
+**Change:** Each OR model entry in `v5_1_design/provider_pinning.json` now carries a `key_env` field selecting which environment-variable holds its OR API key. The orchestrator builds one `TokenBucket` per `key_env` (was: one per upstream provider), so models on different keys get independent rate budgets.
+
+**Split (5/4):**
+- **Key 1 (`OPENROUTER_API_KEY`):** `z-ai/glm-4.7`, `meta-llama/llama-3.3-70b-instruct`, `xiaomi/mimo-v2-pro`, `qwen/qwen3.6-plus`, `x-ai/grok-4-fast`
+- **Key 2 (`OPENROUTER_API_KEY_2`):** `qwen/qwen3.6-max-preview`, `x-ai/grok-4.20`, `z-ai/glm-5`, `xiaomi/mimo-v2.5-pro`
+
+Split balances smoke-#5 token volume (Key 1: $0.354 smoke cost, Key 2: $0.284) and isolates the only OR reasoning model (`grok-4.20`) on Key 2, where it is latency-bound rather than RPS-bound and so does not contend with standard models for the same key's rate budget.
+
+**Files touched:**
+- `src/harness/runner_openrouter.py` — added `key_env` parameter to `OpenRouterRunner.__init__`, used in `_ensure_client`
+- `src/harness/runner_orchestrator.py` — Phase C now keys `provider_limiters` (renamed `key_limiters`) by `key_env` rather than `pinned_provider`; passes `key_env` from pinning to the runner
+- `v5_1_design/provider_pinning.json` — added `key_env` to each of the 9 v5.1 OR model entries; added `key_env_split_2026_05_01` note to `_meta`
+- `.env.example` — documented the two OR key variables
+
+**Expected effect:** OR aggregate throughput ~doubles; full-run wall time ~3 hr → ~1.5–2 hr. No change to per-model token volume, prompts, parsing, or kill-switch thresholds. Both keys are valid for the same OpenRouter account; the user creates the second key in the OR dashboard and adds it to `.env`.
+
+**Validation before launch:** A short smoke (`smoke --n-chains 5 --cell csgo`) with both keys configured verifies (1) both keys authenticate, (2) cost ledgers and usage logs split correctly across the two key-buckets, (3) no 429 spike from the doubled aggregate rate.

@@ -73,9 +73,15 @@ class OpenRouterRunner:
     rates            : Fallback pricing per token (used if OR cost is absent)
     is_reasoning     : Whether to use 1024-token cap vs 64-token cap
     drift_action     : "error" raises ProviderDriftError; "warn" logs and continues
-    limiter          : Shared TokenBucket for the upstream provider (optional).
-                       When supplied, every _call() acquires a token before
-                       sending the request, providing cross-model rate control.
+    limiter          : Shared TokenBucket (optional). When supplied, every
+                       _call() acquires a token before sending the request.
+                       The orchestrator builds one bucket per OR API key so
+                       all model threads on the same key share a single
+                       per-key rate budget (OR rate-limits per key).
+    key_env          : Environment variable holding the OpenRouter API key
+                       this runner uses. Defaults to "OPENROUTER_API_KEY".
+                       Set per model in provider_pinning.json's `key_env`
+                       field to spread load across multiple keys.
     """
 
     def __init__(
@@ -86,6 +92,7 @@ class OpenRouterRunner:
         is_reasoning: bool = False,
         drift_action: str = "error",
         limiter: TokenBucket | None = None,
+        key_env: str = "OPENROUTER_API_KEY",
     ):
         self.model_id        = model_id
         self.pinned_provider = pinned_provider
@@ -93,6 +100,7 @@ class OpenRouterRunner:
         self.is_reasoning    = is_reasoning
         self.drift_action    = drift_action
         self._limiter        = limiter
+        self._key_env        = key_env
         self._client         = None
         self._ledger: dict   = {}
         self._ledger_lock    = threading.Lock()
@@ -111,8 +119,16 @@ class OpenRouterRunner:
         if self._client is None:
             import os
             from openai import OpenAI
+            try:
+                api_key = os.environ[self._key_env]
+            except KeyError as e:
+                raise RuntimeError(
+                    f"[{self.model_id}] OpenRouter key env var "
+                    f"{self._key_env!r} is not set. Add it to .env or "
+                    f"adjust this model's `key_env` in provider_pinning.json."
+                ) from e
             self._client = OpenAI(
-                api_key=os.environ["OPENROUTER_API_KEY"],
+                api_key=api_key,
                 base_url=_OPENROUTER_BASE_URL,
             )
 

@@ -7,11 +7,13 @@
       "3. Throughput >= smoke-test rate (low bar; all selected providers clear it)",
       "4. uptime_last_30m field from OpenRouter /endpoints response"
     ],
-    "note": "pinned_provider matches the provider_name field from OR /endpoints; used in provider.order with allow_fallbacks=false"
+    "note": "pinned_provider matches the provider_name field from OR /endpoints; used in provider.order with allow_fallbacks=false",
+    "key_env_split_2026_05_01": "OR rate-limits per API key. To roughly halve OR wall time, the 9 v5.1 OR models are split 5/4 across two keys via the per-model `key_env` field. Key 1 (OPENROUTER_API_KEY): glm-4.7, llama-3.3-70b, mimo-v2-pro, qwen3.6-plus, grok-4-fast. Key 2 (OPENROUTER_API_KEY_2): qwen3.6-max, grok-4.20, glm-5, mimo-v2.5-pro. Split balances token-volume estimate from smoke #5 (Key 1: $0.354 smoke, Key 2: $0.284 smoke) and isolates the reasoning model (grok-4.20) on Key 2 where it is latency-bound rather than RPS-bound."
   },
   "x-ai/grok-4-fast": {
     "pinned_provider": "xAI",
     "provider_tag": "xai",
+    "key_env": "OPENROUTER_API_KEY",
     "quantization": "unknown",
     "input_price_per_m": 0.20,
     "output_price_per_m": 0.50,
@@ -36,6 +38,7 @@
   "x-ai/grok-4.20": {
     "pinned_provider": "xAI",
     "provider_tag": "xai",
+    "key_env": "OPENROUTER_API_KEY_2",
     "quantization": "unknown",
     "input_price_per_m": 1.25,
     "output_price_per_m": 2.50,
@@ -48,6 +51,7 @@
   "meta-llama/llama-3.3-70b-instruct": {
     "pinned_provider": "WandB",
     "provider_tag": "wandb",
+    "key_env": "OPENROUTER_API_KEY",
     "quantization": "fp16",
     "input_price_per_m": 0.71,
     "output_price_per_m": 0.71,
@@ -72,6 +76,7 @@
   "xiaomi/mimo-v2-pro": {
     "pinned_provider": "Xiaomi",
     "provider_tag": "xiaomi",
+    "key_env": "OPENROUTER_API_KEY",
     "quantization": "fp8",
     "input_price_per_m": 1.00,
     "output_price_per_m": 3.00,
@@ -84,6 +89,7 @@
   "xiaomi/mimo-v2.5-pro": {
     "pinned_provider": "Xiaomi",
     "provider_tag": "xiaomi",
+    "key_env": "OPENROUTER_API_KEY_2",
     "quantization": "fp8",
     "input_price_per_m": 1.00,
     "output_price_per_m": 3.00,
@@ -96,6 +102,7 @@
   "qwen/qwen3.6-plus": {
     "pinned_provider": "Alibaba",
     "provider_tag": "alibaba",
+    "key_env": "OPENROUTER_API_KEY",
     "quantization": "unknown",
     "input_price_per_m": 0.33,
     "output_price_per_m": 1.95,
@@ -108,6 +115,7 @@
   "qwen/qwen3.6-max-preview": {
     "pinned_provider": "Alibaba",
     "provider_tag": "alibaba",
+    "key_env": "OPENROUTER_API_KEY_2",
     "quantization": "unknown",
     "input_price_per_m": 1.04,
     "output_price_per_m": 6.24,
@@ -120,6 +128,7 @@
   "z-ai/glm-4.7": {
     "pinned_provider": "Cerebras",
     "provider_tag": "cerebras",
+    "key_env": "OPENROUTER_API_KEY",
     "quantization": "fp16",
     "input_price_per_m": 2.25,
     "output_price_per_m": 2.75,
@@ -132,6 +141,7 @@
   "z-ai/glm-5": {
     "pinned_provider": "Baidu",
     "provider_tag": "baidu",
+    "key_env": "OPENROUTER_API_KEY_2",
     "quantization": "fp8",
     "input_price_per_m": 0.70,
     "output_price_per_m": 2.24,

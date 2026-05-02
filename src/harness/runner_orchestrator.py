@@ -324,25 +324,44 @@ class RunnerOrchestrator:
             deepseek_threads.append(t)
 
         # Phase C: OpenRouter — one thread per model, staggered starts.
-        # Build one shared TokenBucket per upstream provider so all model
-        # threads through the same provider share a single rate limit.
+        # OR enforces rate limits per API key (not per upstream provider),
+        # so we build one shared TokenBucket per `key_env`. Models on the
+        # same key share a bucket; models on different keys (e.g. via the
+        # 5/4 split across OPENROUTER_API_KEY and OPENROUTER_API_KEY_2)
+        # get independent buckets — doubling aggregate OR throughput.
+        # The DeepInfra-tier rate still applies if any model on a key
+        # routes through DeepInfra.
         or_results: dict[str, list[V51Result]] = {}
-        provider_limiters: dict[str, TokenBucket] = {}
+        key_limiters: dict[str, TokenBucket] = {}
         or_thread_args: list[tuple] = []
 
         for model_id in or_models:
             pin = self.provider_pinning.get(model_id, {})
             provider = pin.get("pinned_provider", "unknown")
-            provider_key = provider.lower()
+            key_env = pin.get("key_env", "OPENROUTER_API_KEY")
 
-            if provider_key not in provider_limiters:
-                if provider_key == "deepinfra":
+            if key_env not in key_limiters:
+                # If any model on this key routes through DeepInfra, use the
+                # tighter DeepInfra rate; otherwise default. Computed once
+                # per key on first encounter.
+                key_models = [
+                    m for m in or_models
+                    if self.provider_pinning.get(m, {}).get(
+                        "key_env", "OPENROUTER_API_KEY"
+                    ) == key_env
+                ]
+                key_has_deepinfra = any(
+                    self.provider_pinning.get(m, {})
+                        .get("pinned_provider", "").lower() == "deepinfra"
+                    for m in key_models
+                )
+                if key_has_deepinfra:
                     rate, burst = _PROVIDER_RATE_DEFAULTS["deepinfra"]
                 else:
                     rate, burst = _PROVIDER_RATE_DEFAULTS["default"]
-                provider_limiters[provider_key] = TokenBucket(rate=rate, burst=burst)
+                key_limiters[key_env] = TokenBucket(rate=rate, burst=burst)
 
-            limiter = provider_limiters[provider_key]
+            limiter = key_limiters[key_env]
 
             if model_id in _OR_DEEPINFRA:
                 max_concurrent = _MAX_CONCURRENT_DEEPINFRA
@@ -625,6 +644,7 @@ class RunnerOrchestrator:
     ) -> None:
         pin = self.provider_pinning.get(model_id, {})
         pinned_provider = pin.get("pinned_provider", "")
+        key_env = pin.get("key_env", "OPENROUTER_API_KEY")
         in_price  = pin.get("input_price_per_m", 1.0)
         out_price = pin.get("output_price_per_m", 4.0)
         rates = {"input": in_price / 1_000_000, "output": out_price / 1_000_000}
@@ -636,6 +656,7 @@ class RunnerOrchestrator:
             is_reasoning=(model_id in _OR_REASONING),
             drift_action="error",
             limiter=limiter,
+            key_env=key_env,
         )
         log_path = self._usage_log_path(model_id)
         all_results = []
