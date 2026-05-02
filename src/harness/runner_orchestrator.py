@@ -53,6 +53,7 @@ from .runner_native import (
     seconds_until_off_peak,
 )
 from .runner_openrouter import OpenRouterRunner, ProviderDriftError
+from .runner_native import atomic_write_text
 from .rate_limiter import TokenBucket
 
 if TYPE_CHECKING:
@@ -463,6 +464,7 @@ class RunnerOrchestrator:
                     "total_output_tokens": 0, "total_cache_read_tokens": 0,
                     "total_cache_creation_tokens": 0, "total_cost_usd": 0.0,
                     "max_single_call_cost_usd": 0.0,
+                    "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
                 })
                 dest["n_calls"]                  += entry.get("n_calls", 0)
                 dest["total_input_tokens"]       += entry.get("total_input_tokens", 0)
@@ -474,6 +476,10 @@ class RunnerOrchestrator:
                 dest["max_single_call_cost_usd"] = max(
                     dest["max_single_call_cost_usd"],
                     entry.get("max_single_call_cost_usd", 0.0))
+                dest["n_yes"]            += entry.get("n_yes", 0)
+                dest["n_no"]             += entry.get("n_no", 0)
+                dest["n_abstain"]        += entry.get("n_abstain", 0)
+                dest["n_stage2_retries"] += entry.get("n_stage2_retries", 0)
 
         # Post-hoc kill-switch (informational; batch can't be cancelled mid-flight)
         try:
@@ -488,7 +494,7 @@ class RunnerOrchestrator:
         # Flush the merged ledger as one canonical file
         ledger_path = self._ledger_path(model_id)
         ledger_path.parent.mkdir(parents=True, exist_ok=True)
-        ledger_path.write_text(json.dumps(merged, indent=2))
+        atomic_write_text(ledger_path, json.dumps(merged, indent=2))
         with self._ledger_lock:
             self._merge_ledger(merged)
 
@@ -540,14 +546,25 @@ class RunnerOrchestrator:
         )
 
     def _run_deepseek(self, model_id, pairs_dict, out_dict, is_smoke=False):
-        if is_smoke and not is_deepseek_off_peak():
+        import os as _os
+        # DEEPSEEK_FORCE_PEAK=1 lets us run DeepSeek smoke tests outside the
+        # 16:30–00:30 UTC discount window. Used for pre-launch validation;
+        # never set in production runs (paying full price defeats the point).
+        force_peak = _os.environ.get("DEEPSEEK_FORCE_PEAK") == "1"
+        if is_smoke and not is_deepseek_off_peak() and not force_peak:
             wait_min = seconds_until_off_peak() / 60
             logger.warning(
                 f"[{model_id}] Skipping DeepSeek in smoke mode — peak hours "
-                f"({wait_min:.0f} min until off-peak). Re-run during UTC 16:30–00:30."
+                f"({wait_min:.0f} min until off-peak). Re-run during UTC 16:30–00:30 "
+                f"or set DEEPSEEK_FORCE_PEAK=1 to bypass (charges full price)."
             )
             out_dict[model_id] = []
             return
+        if force_peak:
+            logger.warning(
+                f"[{model_id}] DEEPSEEK_FORCE_PEAK=1 set — running outside "
+                f"discount window at full price. Smoke/validation only."
+            )
 
         rates = _DEEPSEEK_RATES.get(model_id, {"input": 0.14e-6, "output": 0.55e-6})
         runner = DeepSeekRunner(
@@ -555,7 +572,7 @@ class RunnerOrchestrator:
             rates=rates,
             is_reasoning=(model_id in _DEEPSEEK_REASONING),
             thinking_mode=(model_id not in _DEEPSEEK_THINKING_OFF),
-            enforce_off_peak=True,
+            enforce_off_peak=not force_peak,
         )
         log_path = self._usage_log_path(model_id)
         all_results = []
@@ -719,7 +736,13 @@ class RunnerOrchestrator:
                 "n_calls": 0, "total_input_tokens": 0, "total_output_tokens": 0,
                 "total_cache_read_tokens": 0, "total_cache_creation_tokens": 0,
                 "total_cost_usd": 0.0, "max_single_call_cost_usd": 0.0,
+                "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
             })
+            # If dest was created by an earlier flush before counters existed
+            # (or by a runner that doesn't track them), backfill the keys so
+            # the += ops below don't KeyError.
+            for k in ("n_yes", "n_no", "n_abstain", "n_stage2_retries"):
+                dest.setdefault(k, 0)
             dest["n_calls"]              += entry.get("n_calls", 0)
             dest["total_input_tokens"]   += entry.get("total_input_tokens", 0)
             dest["total_output_tokens"]  += entry.get("total_output_tokens", 0)
@@ -730,12 +753,16 @@ class RunnerOrchestrator:
             dest["max_single_call_cost_usd"] = max(
                 dest["max_single_call_cost_usd"],
                 entry.get("max_single_call_cost_usd", 0.0))
+            dest["n_yes"]             += entry.get("n_yes", 0)
+            dest["n_no"]              += entry.get("n_no", 0)
+            dest["n_abstain"]         += entry.get("n_abstain", 0)
+            dest["n_stage2_retries"]  += entry.get("n_stage2_retries", 0)
 
     def _flush_ledger(self) -> None:
         path = self.output_dir / "cost_ledger.json"
         with self._ledger_lock:
             ledger_snapshot = dict(self._ledger)
-        path.write_text(json.dumps(ledger_snapshot, indent=2))
+        atomic_write_text(path, json.dumps(ledger_snapshot, indent=2))
         total = sum(e.get("total_cost_usd", 0) for e in ledger_snapshot.values())
         logger.info(f"Cost ledger flushed to {path} (total=${total:.4f})")
 

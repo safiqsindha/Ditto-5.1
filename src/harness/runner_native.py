@@ -68,6 +68,31 @@ RATE_LIMIT_SLEEP_S = 0.05
 
 
 # ---------------------------------------------------------------------------
+# Atomic ledger writes (added 2026-05-02 per pre-launch hardening review)
+# ---------------------------------------------------------------------------
+
+def atomic_write_text(path: Path, content: str) -> None:
+    """
+    Write `content` to `path` atomically: write to a sibling tempfile, then
+    os.replace() onto the target. On POSIX (Darwin, Linux), os.replace is
+    atomic — readers see either the old file or the new one, never a
+    half-written file.
+
+    Why this exists: the orchestrator flushes per-model and global
+    cost_ledger.json files repeatedly during a 2-4 hour run. A naïve
+    `path.write_text(json.dumps(...))` truncates first, then writes — if
+    the process is killed (or OOMs, or the laptop hibernates) between
+    truncate and write completion, the ledger is silently corrupted.
+    Post-hoc analysis then sees an invalid JSON file and the canonical
+    cost record is lost. atomic_write_text() prevents that class of bug.
+    """
+    import os as _os
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(content)
+    _os.replace(tmp, path)
+
+
+# ---------------------------------------------------------------------------
 # Shared result type
 # ---------------------------------------------------------------------------
 
@@ -296,6 +321,7 @@ class AnthropicRunner:
                 "total_output_tokens": 0, "total_cache_read_tokens": 0,
                 "total_cache_creation_tokens": 0, "total_cost_usd": 0.0,
                 "max_single_call_cost_usd": 0.0,
+                "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
             })
             dest["n_calls"]                  += entry["n_calls"]
             dest["total_input_tokens"]       += entry["total_input_tokens"]
@@ -306,6 +332,28 @@ class AnthropicRunner:
                 dest["total_cost_usd"] + entry["total_cost_usd"], 8)
             dest["max_single_call_cost_usd"] = max(
                 dest["max_single_call_cost_usd"], entry["max_single_call_cost_usd"])
+
+        # Accumulate label-class counters from results (Anthropic batch has no
+        # two-stage retry concept, so n_stage2_retries stays 0 for this route).
+        # Note: ModelEvaluator's ledger doesn't carry these counter fields,
+        # and v5 EvaluationResult doesn't carry model_id either — but
+        # AnthropicRunner is per-model, so all rows belong to self.model_id.
+        # We backfill the counter keys explicitly because setdefault is a
+        # no-op when an entry already exists from the merge loop above.
+        for model_key in list(self._ledger.keys()) + [self.model_id]:
+            entry = self._ledger.setdefault(model_key, {
+                "n_calls": 0, "total_input_tokens": 0, "total_output_tokens": 0,
+                "total_cache_read_tokens": 0, "total_cache_creation_tokens": 0,
+                "total_cost_usd": 0.0, "max_single_call_cost_usd": 0.0,
+                "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
+            })
+            for k in ("n_yes", "n_no", "n_abstain", "n_stage2_retries"):
+                entry.setdefault(k, 0)
+        target_entry = self._ledger[self.model_id]
+        for r in results_v5:
+            for parsed in (r.baseline_parsed, r.intervention_parsed):
+                if parsed in ("yes", "no", "abstain"):
+                    target_entry[f"n_{parsed}"] += 1
 
         out = []
         route_label = "anthropic_batch" if self.use_batch else "anthropic_sync"
@@ -334,7 +382,7 @@ class AnthropicRunner:
 
     def flush_ledger(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self._ledger, indent=2))
+        atomic_write_text(path, json.dumps(self._ledger, indent=2))
 
 
 # ---------------------------------------------------------------------------
@@ -441,15 +489,21 @@ class OpenAIRunner:
                        condition, "intervention",
                        iv["input_tokens"], iv["output_tokens"],
                        iv["cache_read_tokens"], iv["cache_creation_tokens"], iv_cost, False)
-            self._update_ledger(b, b_cost)
-            self._update_ledger(iv, iv_cost)
+            b_parsed  = _parse_response(b["text"])
+            iv_parsed = _parse_response(iv["text"])
+            self._update_ledger(b, b_cost,
+                                parsed=b_parsed,
+                                needed_retry=b.get("needed_retry", False))
+            self._update_ledger(iv, iv_cost,
+                                parsed=iv_parsed,
+                                needed_retry=iv.get("needed_retry", False))
 
             out.append(V51Result(
                 chain_id=pair.chain_id, cell=pair.cell, condition=condition,
                 model_id=self.model_id, resolved_provider="",
                 baseline_raw=b["text"], intervention_raw=iv["text"],
-                baseline_parsed=_parse_response(b["text"]),
-                intervention_parsed=_parse_response(iv["text"]),
+                baseline_parsed=b_parsed,
+                intervention_parsed=iv_parsed,
                 baseline_input_tokens=b["input_tokens"],
                 baseline_output_tokens=b["output_tokens"],
                 baseline_cache_read_tokens=b["cache_read_tokens"],
@@ -559,13 +613,17 @@ class OpenAIRunner:
                            condition, "baseline",
                            b["input_tokens"], b["output_tokens"],
                            b["cache_read_tokens"], 0, b_cost, True)
-                self._update_ledger(b, b_cost)
+                self._update_ledger(b, b_cost,
+                                    parsed=_parse_response(b_text),
+                                    needed_retry=False)
             if iv:
                 _log_usage(log_path, self.model_id, pair.chain_id, pair.cell,
                            condition, "intervention",
                            iv["input_tokens"], iv["output_tokens"],
                            iv["cache_read_tokens"], 0, iv_cost, True)
-                self._update_ledger(iv, iv_cost)
+                self._update_ledger(iv, iv_cost,
+                                    parsed=_parse_response(iv_text),
+                                    needed_retry=False)
             out.append(V51Result(
                 chain_id=pair.chain_id, cell=pair.cell, condition=condition,
                 model_id=self.model_id, resolved_provider="",
@@ -588,11 +646,13 @@ class OpenAIRunner:
             ))
         return out
 
-    def _update_ledger(self, usage: dict, cost_usd: float) -> None:
+    def _update_ledger(self, usage: dict, cost_usd: float,
+                       parsed: str = "", needed_retry: bool = False) -> None:
         entry = self._ledger.setdefault(self.model_id, {
             "n_calls": 0, "total_input_tokens": 0, "total_output_tokens": 0,
             "total_cache_read_tokens": 0, "total_cache_creation_tokens": 0,
             "total_cost_usd": 0.0, "max_single_call_cost_usd": 0.0,
+            "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
         })
         entry["n_calls"]              += 1
         entry["total_input_tokens"]   += usage.get("input_tokens", 0)
@@ -601,10 +661,14 @@ class OpenAIRunner:
         entry["total_cost_usd"]        = round(entry["total_cost_usd"] + cost_usd, 8)
         entry["max_single_call_cost_usd"] = max(
             entry["max_single_call_cost_usd"], cost_usd)
+        if parsed in ("yes", "no", "abstain"):
+            entry[f"n_{parsed}"] += 1
+        if needed_retry:
+            entry["n_stage2_retries"] += 1
 
     def flush_ledger(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self._ledger, indent=2))
+        atomic_write_text(path, json.dumps(self._ledger, indent=2))
 
 
 # ---------------------------------------------------------------------------
@@ -807,8 +871,12 @@ class MoonshotRunner:
             )
 
             with self._ledger_lock:
-                self._update_ledger(b)
-                self._update_ledger(iv)
+                self._update_ledger(b,
+                                    parsed=_parse_response(b["text"]),
+                                    needed_retry=b.get("needed_retry", False))
+                self._update_ledger(iv,
+                                    parsed=_parse_response(iv["text"]),
+                                    needed_retry=iv.get("needed_retry", False))
             with out_lock:
                 out.append(result)
 
@@ -827,12 +895,14 @@ class MoonshotRunner:
             t.join()
         return out
 
-    def _update_ledger(self, usage: dict) -> None:
+    def _update_ledger(self, usage: dict,
+                       parsed: str = "", needed_retry: bool = False) -> None:
         # Caller must hold self._ledger_lock
         entry = self._ledger.setdefault(self.model_id, {
             "n_calls": 0, "total_input_tokens": 0, "total_output_tokens": 0,
             "total_cache_read_tokens": 0, "total_cache_creation_tokens": 0,
             "total_cost_usd": 0.0, "max_single_call_cost_usd": 0.0,
+            "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
         })
         cost_usd = usage["cost_usd"]
         entry["n_calls"]                 += 1
@@ -842,10 +912,14 @@ class MoonshotRunner:
         entry["total_cost_usd"] = round(entry["total_cost_usd"] + cost_usd, 8)
         entry["max_single_call_cost_usd"] = max(
             entry["max_single_call_cost_usd"], cost_usd)
+        if parsed in ("yes", "no", "abstain"):
+            entry[f"n_{parsed}"] += 1
+        if needed_retry:
+            entry["n_stage2_retries"] += 1
 
     def flush_ledger(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self._ledger, indent=2))
+        atomic_write_text(path, json.dumps(self._ledger, indent=2))
 
 
 # ---------------------------------------------------------------------------
@@ -953,15 +1027,21 @@ class GoogleRunner:
                        condition, "intervention",
                        iv["input_tokens"], iv["output_tokens"],
                        iv["cache_read_tokens"], 0, iv_cost, False)
-            self._update_ledger(b, b_cost)
-            self._update_ledger(iv, iv_cost)
+            b_parsed  = _parse_response(b["text"])
+            iv_parsed = _parse_response(iv["text"])
+            self._update_ledger(b, b_cost,
+                                parsed=b_parsed,
+                                needed_retry=b.get("needed_retry", False))
+            self._update_ledger(iv, iv_cost,
+                                parsed=iv_parsed,
+                                needed_retry=iv.get("needed_retry", False))
 
             out.append(V51Result(
                 chain_id=pair.chain_id, cell=pair.cell, condition=condition,
                 model_id=self.model_id, resolved_provider="",
                 baseline_raw=b["text"], intervention_raw=iv["text"],
-                baseline_parsed=_parse_response(b["text"]),
-                intervention_parsed=_parse_response(iv["text"]),
+                baseline_parsed=b_parsed,
+                intervention_parsed=iv_parsed,
                 baseline_input_tokens=b["input_tokens"],
                 baseline_output_tokens=b["output_tokens"],
                 baseline_cache_read_tokens=b["cache_read_tokens"],
@@ -1121,15 +1201,21 @@ class GoogleRunner:
                        condition, "intervention",
                        iv.get("input_tokens", 0), iv.get("output_tokens", 0),
                        iv.get("cache_read_tokens", 0), 0, iv_cost, True)
-            self._update_ledger(b, b_cost)
-            self._update_ledger(iv, iv_cost)
+            b_parsed  = _parse_response(b_text)
+            iv_parsed = _parse_response(iv_text)
+            self._update_ledger(b, b_cost,
+                                parsed=b_parsed,
+                                needed_retry=False)
+            self._update_ledger(iv, iv_cost,
+                                parsed=iv_parsed,
+                                needed_retry=False)
 
             out.append(V51Result(
                 chain_id=pair.chain_id, cell=pair.cell, condition=condition,
                 model_id=self.model_id, resolved_provider="",
                 baseline_raw=b_text, intervention_raw=iv_text,
-                baseline_parsed=_parse_response(b_text),
-                intervention_parsed=_parse_response(iv_text),
+                baseline_parsed=b_parsed,
+                intervention_parsed=iv_parsed,
                 baseline_input_tokens=b.get("input_tokens", 0),
                 baseline_output_tokens=b.get("output_tokens", 0),
                 baseline_cache_read_tokens=b.get("cache_read_tokens", 0),
@@ -1146,11 +1232,13 @@ class GoogleRunner:
             ))
         return out
 
-    def _update_ledger(self, usage: dict, cost_usd: float) -> None:
+    def _update_ledger(self, usage: dict, cost_usd: float,
+                       parsed: str = "", needed_retry: bool = False) -> None:
         entry = self._ledger.setdefault(self.model_id, {
             "n_calls": 0, "total_input_tokens": 0, "total_output_tokens": 0,
             "total_cache_read_tokens": 0, "total_cache_creation_tokens": 0,
             "total_cost_usd": 0.0, "max_single_call_cost_usd": 0.0,
+            "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
         })
         entry["n_calls"]             += 1
         entry["total_input_tokens"]  += usage.get("input_tokens", 0)
@@ -1159,10 +1247,14 @@ class GoogleRunner:
         entry["total_cost_usd"]       = round(entry["total_cost_usd"] + cost_usd, 8)
         entry["max_single_call_cost_usd"] = max(
             entry["max_single_call_cost_usd"], cost_usd)
+        if parsed in ("yes", "no", "abstain"):
+            entry[f"n_{parsed}"] += 1
+        if needed_retry:
+            entry["n_stage2_retries"] += 1
 
     def flush_ledger(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self._ledger, indent=2))
+        atomic_write_text(path, json.dumps(self._ledger, indent=2))
 
 
 # ---------------------------------------------------------------------------
@@ -1296,15 +1388,21 @@ class DeepSeekRunner:
                        condition, "intervention",
                        iv["input_tokens"], iv["output_tokens"],
                        iv["cache_read_tokens"], 0, iv_cost, False)
-            self._update_ledger(b, b_cost)
-            self._update_ledger(iv, iv_cost)
+            b_parsed  = _parse_response(b["text"])
+            iv_parsed = _parse_response(iv["text"])
+            self._update_ledger(b, b_cost,
+                                parsed=b_parsed,
+                                needed_retry=b.get("needed_retry", False))
+            self._update_ledger(iv, iv_cost,
+                                parsed=iv_parsed,
+                                needed_retry=iv.get("needed_retry", False))
 
             out.append(V51Result(
                 chain_id=pair.chain_id, cell=pair.cell, condition=condition,
                 model_id=self.model_id, resolved_provider="",
                 baseline_raw=b["text"], intervention_raw=iv["text"],
-                baseline_parsed=_parse_response(b["text"]),
-                intervention_parsed=_parse_response(iv["text"]),
+                baseline_parsed=b_parsed,
+                intervention_parsed=iv_parsed,
                 baseline_input_tokens=b["input_tokens"],
                 baseline_output_tokens=b["output_tokens"],
                 baseline_cache_read_tokens=b["cache_read_tokens"],
@@ -1321,11 +1419,13 @@ class DeepSeekRunner:
             ))
         return out
 
-    def _update_ledger(self, usage: dict, cost_usd: float) -> None:
+    def _update_ledger(self, usage: dict, cost_usd: float,
+                       parsed: str = "", needed_retry: bool = False) -> None:
         entry = self._ledger.setdefault(self.model_id, {
             "n_calls": 0, "total_input_tokens": 0, "total_output_tokens": 0,
             "total_cache_read_tokens": 0, "total_cache_creation_tokens": 0,
             "total_cost_usd": 0.0, "max_single_call_cost_usd": 0.0,
+            "n_yes": 0, "n_no": 0, "n_abstain": 0, "n_stage2_retries": 0,
         })
         entry["n_calls"]             += 1
         entry["total_input_tokens"]  += usage.get("input_tokens", 0)
@@ -1334,7 +1434,11 @@ class DeepSeekRunner:
         entry["total_cost_usd"]       = round(entry["total_cost_usd"] + cost_usd, 8)
         entry["max_single_call_cost_usd"] = max(
             entry["max_single_call_cost_usd"], cost_usd)
+        if parsed in ("yes", "no", "abstain"):
+            entry[f"n_{parsed}"] += 1
+        if needed_retry:
+            entry["n_stage2_retries"] += 1
 
     def flush_ledger(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self._ledger, indent=2))
+        atomic_write_text(path, json.dumps(self._ledger, indent=2))

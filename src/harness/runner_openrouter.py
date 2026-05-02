@@ -38,6 +38,7 @@ from .runner_native import (
     _log_usage,
     _parse_response,
     _parse_response_lenient,
+    atomic_write_text,
     MAX_TOKENS_STANDARD,
     MAX_TOKENS_STANDARD_RETRY,
     MAX_TOKENS_REASONING,
@@ -343,13 +344,18 @@ class OpenRouterRunner:
                            "or_model": iv["resolved_provider"]},
                 )
 
+            b_parsed  = _parse_response(b["text"])
+            iv_parsed = _parse_response(iv["text"])
+            b_retry   = b.get("needed_retry", False)
+            iv_retry  = iv.get("needed_retry", False)
+
             result = V51Result(
                 chain_id=pair.chain_id, cell=pair.cell, condition=condition,
                 model_id=self.model_id,
                 resolved_provider=b.get("resolved_provider", ""),
                 baseline_raw=b["text"], intervention_raw=iv["text"],
-                baseline_parsed=_parse_response(b["text"]),
-                intervention_parsed=_parse_response(iv["text"]),
+                baseline_parsed=b_parsed,
+                intervention_parsed=iv_parsed,
                 baseline_input_tokens=b["input_tokens"],
                 baseline_output_tokens=b["output_tokens"],
                 baseline_cache_read_tokens=0,
@@ -362,14 +368,14 @@ class OpenRouterRunner:
                 intervention_cost_usd=iv_cost,
                 baseline_parsed_lenient=_parse_response_lenient(b["text"]),
                 intervention_parsed_lenient=_parse_response_lenient(iv["text"]),
-                baseline_needed_retry=b.get("needed_retry", False),
-                intervention_needed_retry=iv.get("needed_retry", False),
+                baseline_needed_retry=b_retry,
+                intervention_needed_retry=iv_retry,
                 route="openrouter",
             )
 
             with self._ledger_lock:
-                self._update_ledger(b, b_cost)
-                self._update_ledger(iv, iv_cost)
+                self._update_ledger(b, b_cost, parsed=b_parsed, needed_retry=b_retry)
+                self._update_ledger(iv, iv_cost, parsed=iv_parsed, needed_retry=iv_retry)
 
             with out_lock:
                 out.append(result)
@@ -391,13 +397,29 @@ class OpenRouterRunner:
 
         return out
 
-    def _update_ledger(self, usage: dict, cost_usd: float) -> None:
-        # Caller must hold self._ledger_lock
+    def _update_ledger(
+        self,
+        usage: dict,
+        cost_usd: float,
+        parsed: str = "",
+        needed_retry: bool = False,
+    ) -> None:
+        # Caller must hold self._ledger_lock.
+        # `parsed` and `needed_retry` are added 2026-05-02 to give the
+        # ledger enough information to spot two pre-launch hardening risks
+        # without a post-hoc JSONL re-parse:
+        #   - label-class collapse (e.g. model returns 95% YES under one
+        #     condition — would silently bias H1 without tripping §9.3)
+        #   - Stage-2 escalation rate (high rate inflates token cost and
+        #     can correlate kill-switch trips with formatting quirks
+        #     rather than actual cost-of-reasoning)
         entry = self._ledger.setdefault(self.model_id, {
             "n_calls": 0, "total_input_tokens": 0, "total_output_tokens": 0,
             "total_cache_read_tokens": 0, "total_cache_creation_tokens": 0,
             "total_cost_usd": 0.0, "max_single_call_cost_usd": 0.0,
             "resolved_providers": [],
+            "n_yes": 0, "n_no": 0, "n_abstain": 0,
+            "n_stage2_retries": 0,
         })
         entry["n_calls"]             += 1
         entry["total_input_tokens"]  += usage.get("input_tokens", 0)
@@ -408,7 +430,11 @@ class OpenRouterRunner:
         resolved = usage.get("resolved_provider", "")
         if resolved and resolved not in entry["resolved_providers"]:
             entry["resolved_providers"].append(resolved)
+        if parsed in ("yes", "no", "abstain"):
+            entry[f"n_{parsed}"] += 1
+        if needed_retry:
+            entry["n_stage2_retries"] += 1
 
     def flush_ledger(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self._ledger, indent=2))
+        atomic_write_text(path, json.dumps(self._ledger, indent=2))
