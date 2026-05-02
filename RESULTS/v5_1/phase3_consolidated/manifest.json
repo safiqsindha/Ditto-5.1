@@ -1,0 +1,95 @@
+{
+  "models": {
+    "claude-haiku-4-5-20251001": {
+      "source": "results/v5_1/full_batch_20260502_094909/raw/claude-haiku-4-5-20251001_results.jsonl",
+      "n_rows": 4000
+    },
+    "claude-sonnet-4-5": {
+      "source": "results/v5_1/full_batch_20260502_094909/raw/claude-sonnet-4-5_results.jsonl",
+      "n_rows": 4000
+    },
+    "claude-sonnet-4-6": {
+      "source": "results/v5_1/full_batch_20260502_094909/raw/claude-sonnet-4-6_results.jsonl",
+      "n_rows": 4000
+    },
+    "deepseek-v4-flash": {
+      "source": "results/v5_1/full_deepseek_20260502_094423/raw/deepseek-v4-flash_results.jsonl",
+      "n_rows": 4000
+    },
+    "deepseek-v4-pro": {
+      "source": "results/v5_1/full_deepseek_20260502_094423/raw/deepseek-v4-pro_results.jsonl",
+      "n_rows": 4000
+    },
+    "gemini-2.5-flash": {
+      "source": "results/v5_1/full_google_gemini-2.5-flash_20260502_100953/raw/gemini-2.5-flash_results.jsonl",
+      "n_rows": 3400
+    },
+    "gemini-3-flash-preview": {
+      "source": "results/v5_1/full_google_gemini-3-flash-preview_20260502_101302/raw/gemini-3-flash-preview_results.jsonl",
+      "n_rows": 3500
+    },
+    "gemini-3.1-flash-lite-preview": {
+      "source": "results/v5_1/full_google_gemini-3.1-flash-lite-preview_20260502_100109/raw/gemini-3.1-flash-lite-preview_results.jsonl",
+      "n_rows": 4000
+    },
+    "gemini-3.1-pro-preview": {
+      "source": "results/v5_1/full_google_gemini-3.1-pro-preview_20260502_101812/raw/gemini-3.1-pro-preview_results.jsonl",
+      "n_rows": 4000
+    },
+    "gpt-5": {
+      "source": "results/v5_1/full_batch_20260502_094909/raw/gpt-5_results.jsonl",
+      "n_rows": 2400
+    },
+    "gpt-5-mini": {
+      "source": "results/v5_1/full_batch_20260502_094909/raw/gpt-5-mini_results.jsonl",
+      "n_rows": 4000
+    },
+    "gpt-5.4-mini": {
+      "source": "results/v5_1/full_batch_20260502_094909/raw/gpt-5.4-mini_results.jsonl",
+      "n_rows": 3100
+    },
+    "kimi-k2.6": {
+      "source": "results/v5_1/full_kimi_20260502_100008/raw/kimi-k2.6_results.jsonl",
+      "n_rows": 2876
+    },
+    "meta-llama/llama-3.3-70b-instruct": {
+      "source": "results/v5_1/full_20260502_064050/raw/meta-llama_llama-3.3-70b-instruct_results.jsonl",
+      "n_rows": 3844
+    },
+    "qwen/qwen3.6-max-preview": {
+      "source": "results/v5_1/full_20260502_064050/raw/qwen_qwen3.6-max-preview_results.jsonl",
+      "n_rows": 3594
+    },
+    "qwen/qwen3.6-plus": {
+      "source": "results/v5_1/full_20260502_064050/raw/qwen_qwen3.6-plus_results.jsonl",
+      "n_rows": 3961
+    },
+    "x-ai/grok-4-fast": {
+      "source": "results/v5_1/full_20260502_064050/raw/x-ai_grok-4-fast_results.jsonl",
+      "n_rows": 3810
+    },
+    "x-ai/grok-4.20": {
+      "source": "results/v5_1/full_20260502_064050/raw/x-ai_grok-4.20_results.jsonl",
+      "n_rows": 3931
+    },
+    "xiaomi/mimo-v2-pro": {
+      "source": "results/v5_1/full_20260502_064050/raw/xiaomi_mimo-v2-pro_results.jsonl",
+      "n_rows": 3976
+    },
+    "xiaomi/mimo-v2.5-pro": {
+      "source": "results/v5_1/full_20260502_064050/raw/xiaomi_mimo-v2.5-pro_results.jsonl",
+      "n_rows": 3949
+    },
+    "z-ai/glm-4.7": {
+      "source": "results/v5_1/full_20260502_064050/raw/z-ai_glm-4.7_results.jsonl",
+      "n_rows": 3491
+    },
+    "z-ai/glm-5": {
+      "source": "results/v5_1/full_20260502_064050/raw/z-ai_glm-5_results.jsonl",
+      "n_rows": 3628
+    }
+  },
+  "n_models": 22,
+  "parse_rate_floor": 0.9,
+  "semantic_note": "YES = consistent (no violation), NO = not consistent (violation present). Sensitivity = % NO on adversarial chain. Specificity = % YES on clean chain. FP rate = % NO on clean chain."
+}
