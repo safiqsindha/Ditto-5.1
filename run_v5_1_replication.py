@@ -388,6 +388,29 @@ def write_smoke_report(results_by_model: dict, output_dir: Path) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+def _raise_fd_limit(target: int = 4096) -> None:
+    """
+    Raise the file-descriptor soft limit to `target` (or hard cap, whichever is
+    lower). The orchestrator's _parallel_batches path spawns 40 threads per
+    batch-API model (5 cells × 8 conditions); with 6 batch models running
+    concurrently that's 240+ threads each importing the openai/anthropic
+    SDKs. macOS default ulimit is 256, which gets exhausted instantly — every
+    batch model returns "[Errno 24] Too many open files" and 0 results.
+    Verified failure mode in run full_20260502_064050; this prevents recurrence.
+    """
+    try:
+        import resource
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        new_soft = max(soft, min(target, hard))
+        if new_soft > soft:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (new_soft, hard))
+            logger.info(f"Raised FD limit: {soft} → {new_soft} (hard cap {hard})")
+        else:
+            logger.info(f"FD limit already {soft} (≥ target {target})")
+    except Exception as e:
+        logger.warning(f"Could not raise FD limit: {e}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="v5.1 Cross-Model Replication")
     parser.add_argument("mode", choices=["smoke", "full"])
@@ -402,6 +425,7 @@ def main() -> None:
     parser.add_argument("--no-kill-switch", action="store_true")
     args = parser.parse_args()
 
+    _raise_fd_limit()
     load_env(_ENV_PATH)
 
     # Output directory
