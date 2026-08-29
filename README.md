@@ -1,156 +1,136 @@
-# v5: Five-Cell Parallel Detection Experiment
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+    <img src="assets/banner-light.svg" alt="Project Ditto v5.1" width="100%">
+  </picture>
+</p>
 
-[![v5 tests](https://github.com/safiqsindha/Ditto-V5/actions/workflows/v5-tests.yml/badge.svg)](https://github.com/safiqsindha/Ditto-V5/actions/workflows/v5-tests.yml)
+# Project Ditto v5.1 — Cross-Model Replication
 
-Five-cell parallel replication of v3's constraint-chain detection methodology across new game domains. Subject model: Claude Haiku 4.5.
+**v5 found a clean 4-tier hierarchy in one model. Across 22 models, it does not survive.**
 
-**Status:** ✅ **CLOSED 2026-04-30** — Phase D complete at n=1,200 chains/cell, results locked, methodology paused for v5.1 cross-model replication (scoped separately). Tag: [`v5.0`](https://github.com/safiqsindha/Ditto-V5/releases/tag/v5.0).
+v5.1 replays [v5](https://github.com/safiqsindha/Ditto-V5)'s frozen prompt corpus across **22 models from 12 providers** via OpenRouter, extended along two axes that skeptical review identified as load-bearing for the mechanism claim: derived-state **marker ablation** and **strict grounding**. It is the point in the programme where a single-model result meets a panel — and the panel does not agree with it.
 
-**Headline finding:** 4-tier representational hierarchy of LLM constraint reasoning. 4 of 5 cells significant past Bonferroni at α/5 by many orders of magnitude. See [`STATUS.md`](STATUS.md) and [`MEMO.md`](MEMO.md).
+- **A real replication attempt, not a victory lap** — the design was pre-registered on OSF *before* any model was hit at full-run scale
+- **The null is the finding** — median panel accuracy sits at chance, and the failure mode is specific and reproducible
+- **Provider-stratified disclosure** — inference-regime heterogeneity is reported, not averaged away
+- **Every response is committed** — 81,460 evaluations, consolidated and re-analysable without touching an API
 
-| Cell | Δ Det@Int | p_Bonferroni | Tier |
-|------|----------:|-------------:|------|
-| pubg          | +24.1% | 1.1e-63   | 1 (aligned) |
-| nba           | +42.6% | 5.2e-112  | 1 (aligned) |
-| csgo          | +32.9% | 9.2e-87   | 2 (partial-observability) |
-| rocket_league | +5.9%  | 4.9e-16   | 3 (misaligned) |
-| poker         | -0.1%  | 1.000     | 0 (saturated/ceiling) |
+![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
+![Python](https://img.shields.io/badge/python-3.11%2B-0891b2?style=flat-square)
+![Models](https://img.shields.io/badge/models-22-7C3AED?style=flat-square)
+![Evaluations](https://img.shields.io/badge/evaluations-81%2C460-7C3AED?style=flat-square)
+![Pre-registered](https://img.shields.io/badge/pre--registered-OSF-7C3AED?style=flat-square)
 
-**Reference experiments:** v3 (Chess/Checkers), v4 (single-cell methodology characterization). v5.1 = cross-model replication via OpenRouter, scoped separately.
+**[OSF pre-registration](OSF_PREREG.md)** · **[Design spec](v5_1_design/SPEC.md)** · **[Build plan](v5_1_design/BUILD_PLAN.md)** · **[Pre-mortem](v5_1_design/PRE_MORTEM.md)** · **[Red-team appendix](v5_1_design/red_team_appendix.md)** · **[Decision log](DECISION_LOG.md)**
 
----
+> **Orientation.** This repository was branched from v5 and still carries v5's documents (`STATUS.md`, `MEMO.md`, `SPEC.md`) as inherited context. **The v5.1 work is in [`v5_1_design/`](v5_1_design/), [`OSF_PREREG.md`](OSF_PREREG.md), and [`RESULTS/v5_1/`](RESULTS/v5_1/).** Where the two disagree, v5.1's documents govern.
 
-## Domains (one cell each)
+## The panel
 
-| Cell | Domain | Data Source | Sample Target |
-|------|---------|-------------|---------------|
-| `pubg` | PUBG sample matches (squad-fpp / solo-fpp) | PUBG Developer API (telemetry) | 25 matches (smoke), scaling to 80+ for full corpus |
-| `nba` | 2023-24 season | NBA Stats API (PlayByPlayV3) | 300 games |
-| `csgo` | 2024 S-tier (CS2) | HLTV demo archive + awpy | 150 maps |
-| `rocket_league` | RLCS 2024 | BallChasing.com + rrrocket | 250 replays |
-| `poker` | NLHE — HandHQ + WSOP 2023 (all-human) | PHH Dataset v3 (tomli) | 3,500 hands |
+| | |
+|---|---|
+| Models evaluated | **22**, across 12 providers |
+| Total evaluations | **81,460** |
+| Total spend | **$59.34** |
+| Cells | `pubg` · `nba` · `csgo` · `rocket_league` · `poker` |
+| Conditions | 8 — baseline/intervention × marker/no-marker × strict/non-strict |
+| Models clearing the §7.3 parse gate | 21 of 22 |
 
-**SPEC v1.1 amendments** ([SPEC.md](SPEC.md)):
-- **A1** (pre-current session): Hearthstone → Poker — HSReplay friction; PHH Dataset v3 is open
-- **A2** (2026-04-28): Fortnite → PUBG — Epic CDN locked down public chunk access; PUBG offers a documented public API ([D-35](DECISION_LOG.md), [D-36](DECISION_LOG.md))
-- **A3** (2026-04-28): Poker corpus Pluribus → HandHQ — Pluribus hands include Facebook's superhuman bot in one of 6 seats, contaminating ~17% of actions; switched to HandHQ (anonymized human cash games) + WSOP 2023 ([D-37](DECISION_LOG.md))
+### Panel-level result
 
----
+| Metric | Median | Range |
+|---|---:|---|
+| Sensitivity | 0.891 | 0.495 – 1.000 |
+| **Specificity** | **0.232** | 0.000 – 0.666 |
+| **Accuracy** | **0.508** | 0.424 – 0.618 |
 
-## Quickstart
+Median accuracy is **0.508** — chance. The pattern behind it is consistent and is not random error: models answer *"violation"* almost regardless of the chain. Sensitivity is high because saying yes to everything catches every true positive; specificity collapses for exactly the same reason. Five of the 22 models score below 0.10 specificity, three of them effectively zero (≤ 0.007), and nine fall below 0.50 accuracy outright.
+
+This is a **response-bias failure, not a detection failure.** The panel is not weakly detecting the signal v5 reported; on this corpus most of it is not discriminating at all.
+
+### Selected models
+
+| Model | Sensitivity | Specificity | Accuracy |
+|---|---:|---:|---:|
+| `z-ai/glm-5` | 0.569 | **0.666** | **0.618** |
+| `x-ai/grok-4-fast` | 0.964 | 0.270 | 0.617 |
+| `xiaomi/mimo-v2.5-pro` | 0.882 | 0.249 | 0.565 |
+| `kimi-k2.6` | 0.946 | 0.166 | 0.555 |
+| `gemini-3-flash-preview` | 0.521 | 0.481 | 0.501 |
+| `claude-sonnet-4-6` | 0.703 | 0.339 | 0.520 |
+| `claude-haiku-4-5` | 0.941 | 0.006 | 0.473 |
+| `deepseek-v4-flash` | 0.928 | 0.054 | 0.491 |
+| `meta-llama/llama-3.3-70b` | 0.995 | 0.043 | 0.519 |
+| `gpt-5` | 0.634 | 0.215 | 0.424 |
+
+Full per-model, per-cell and per-condition tables: [`RESULTS/v5_1/phase3_consolidated/`](RESULTS/v5_1/phase3_consolidated/).
+
+> **`claude-sonnet-4-5` is excluded from primary analysis.** Its parse rate of 0.8196 falls below the pre-registered §7.3 gate; 882 of 4,000 baseline rows were abstentions. It stays in the committed data for completeness.
+
+## What the pre-registration changed, and why
+
+[`OSF_PREREG.md`](OSF_PREREG.md) does **not** simply operationalise [`v5_1_design/SPEC.md`](v5_1_design/SPEC.md). Smoke-test iteration (2026-04-30 → 05-01) surfaced constraints that forced substantive design changes, and §0 of the pre-registration enumerates them so reviewers can compare both documents side by side.
+
+The largest change is the headline test itself:
+
+| | SPEC.md | OSF pre-registration |
+|---|---|---|
+| Headline test | Conjunctive within-provider hierarchy — replicates if ≥ 5 of 6 capability ladders show the 4-tier pattern | Mixed-effects logistic regression of the condition main effect, with model-stratified heterogeneity tests |
+| Statistical model | Per-cell McNemar with cluster-robust SEs | Multi-level GLM with crossed random effects on `model` and `chain_id` |
+| Thresholds | Strict 6/6, moderate 5/6, weak 3–4/6 ladders | Pre-registered minimum detectable effect for H1; H2/H3 require interaction terms above a specified Cohen's *d* |
+
+**Why:** the ladder framing needed ≥ 3 models per provider on a credible capability gradient. After exclusions the panel leaves only Anthropic (3), Google (4), and OpenAI (3) — a conjunctive six-ladder test is no longer testable. The spirit is retained (cross-model heterogeneity matters) but operationalised through mixed effects rather than ladder voting.
+
+Disclosing this in §0 rather than silently substituting the new test is the point.
+
+## Reproducing
 
 ```bash
-# Install dependencies (Python 3.11+)
 pip install -r requirements.txt
+cp .env.example .env          # OpenRouter + provider keys
 
-# Copy and fill in your API keys
-cp .env.example .env   # then edit .env
-
-# Run the test suite
 python -m pytest tests/
-
-# Dry-run evaluation (mock data, no API or LLM calls)
-python run_eval.py --dry-run --output RESULTS/eval_dry_run.json
-
-# Run the pilot validator (mock data, no API calls)
-python run_pilot.py
-
-# Run pilot for one cell only
-python run_pilot.py --cells nba
-
-# Save pilot report to JSON
-python run_pilot.py --output RESULTS/pilot_report.json
 ```
 
----
-
-## Read these first
-
-| File | Purpose |
-|------|---------|
-| `STATUS.md` | End-state status (Phase D closed 2026-04-30, results locked) |
-| `MEMO.md` | Internal closeout memo + bridge document for the eventual V1–V5.1 arXiv preprint |
-| `DECISION_LOG.md` | D-0 → D-45, every methodology decision with default/alternative/reversibility |
-| `SPEC.md` | Pre-registered specification (signed 2026-04-27, 7 amendments adopted) |
-| `BUILD_PLAN.md` | Sequenced build plan with dependency graph |
-| `docs/REAL_DATA_GUIDE.md` | How to set up credentials and run real-data acquisition |
-| `docs/STATUS_BUILD_DAY_2026-04-27.md` | Original end-of-build-day status (preserved for history) |
-
----
-
-## Repository Layout
+The consolidated Phase 3 outputs are committed, so the panel tables recompute with no API access:
 
 ```
-./
-├── BUILD_PLAN.md, SPEC.md, DECISION_LOG.md, STATUS.md   # Documentation
-├── README.md                                             # This file
-├── run_pilot.py                                          # Pilot validation entry point
-├── run_eval.py                                           # Phase D evaluation entry point
-├── requirements.txt
-├── config/
-│   ├── cells.yaml          # Per-cell sample targets, stratification, env vars
-│   └── harness.yaml        # Statistical harness parameters (Bonferroni, alpha, etc.)
-├── src/
-│   ├── common/             # GameEvent, EventStream, ChainCandidate; config loader
-│   ├── harness/            # McNemar, scoring, variance, ACTIONABLE_TYPES, cell runner
-│   ├── interfaces/         # TranslationFunction and ChainBuilder ABCs
-│   ├── cells/              # One subdirectory per domain: pipeline.py + extractor.py
-│   │   ├── pubg/           # active battle-royale cell (replaces fortnite per A2)
-│   │   ├── fortnite/       # legacy — kept for tests; not in active configs
-│   │   ├── nba/
-│   │   ├── csgo/
-│   │   ├── rocket_league/
-│   │   └── poker/
-│   └── pilot/              # MockT + PilotValidator + render_report
-├── data/
-│   ├── raw/                # Per-cell raw downloads (gitignored)
-│   ├── processed/          # Per-cell parsed records (gitignored)
-│   └── events/             # Per-cell normalized GameEvent streams (gitignored)
-├── RESULTS/                # Pilot reports, evaluation outputs (gitignored)
-├── notebooks/              # Analysis notebooks
-└── tests/                  # pytest suite (401 tests)
+RESULTS/v5_1/phase3_consolidated/
+  consolidated.jsonl            all parsed rows
+  manifest.json                 per-model provenance → source run + row count
+  per_model_summary.csv         sensitivity / specificity / accuracy / cost per model
+  per_cell_summary.csv          the same, split by domain cell
+  per_condition_summary.csv     the same, split by the 8 experimental conditions
+RESULTS/v5_1/smoke_20260501_180858/    smoke run: per-model ledgers + raw results
+RESULTS/v5_1/reasoning_control_*.json  reasoning-mode control runs
 ```
 
----
+## What this invalidates
 
-## What's Implemented
+A panel-wide null at this scale constrains how earlier versions can be read. Claims resting on a single model's behaviour — v5's 4-tier hierarchy above all — cannot be stated as properties of "language models" without this replication attached. The follow-up work splits into two lines:
 
-- All five data acquisition pipelines (real-fetch + mock fallback) — pubg, nba, csgo, rocket_league, poker
-- All five domain event extractors with derived-state markers (per D-43)
-- All five Translation Functions T (`src/interfaces/translation.py`)
-- Per-cell PromptBuilder + `_MarkerSurfacing` for chain rendering (per A4–A6)
-- Per-cell violation injectors (`src/harness/violation_injector.py`) for the violation-detection diagnostic (D-42)
-- Statistical harness: McNemar (continuity correction or exact binomial when n_disc<25), Bonferroni, bootstrap CI
-- Anthropic Batches API caller with positional custom_id integrity (`src/harness/model_evaluator.py`)
-- Phase D entry point (`run_diagnostic_violations.py`) with strict-grounding (D-44 Layer 1)
-- Layer-2 CoT FP diagnostic (`run_phase_d_cot.py`)
-- Phase D synthesis pipeline (`synthesize_phase_d.py`)
-- Raw batch archival (`archive_phase_d_batches.py` → `RESULTS/phase_d_raw_batches/`, 23,998 records committed)
-- Test suite: 415 tests passing (9 pre-existing failures in Fortnite + CSGO mock tests, tracked in [#5](https://github.com/safiqsindha/Ditto-V5/issues/5) — unrelated to v5 results)
+- [**v5.2 — Diagnostic Kit**](https://github.com/safiqsindha/Ditto-5.2-diagostic): a pre-registered analysis suite diagnosing the mechanism behind the anti-detection phenomenon seen here.
+- [**v5.4 — OLAT**](https://github.com/safiqsindha/DITTO-V5.4-OLAT): if the inference regime rather than the model is the dominant lever, sweeping levers one at a time should show it. It does.
 
-## Reproducing the Headline Numbers
+## The Ditto program
 
-```bash
-.venv/bin/python synthesize_phase_d.py
-# -> RESULTS/phase_d_final.json + console table
+| Version | Domain | Headline |
+|---|---|---|
+| [v1](https://github.com/safiqsindha/Project-Ditto) | Pokémon Showdown telemetry | Sonnet +0.206 · Haiku +0.066 |
+| [v2](https://github.com/safiqsindha/Project-Ditto-v2) | Programming agent trajectories | Partial reproduction |
+| [v3](https://github.com/safiqsindha/Project-Ditto-V3) | Chess · Chess960 · checkers · draughts | Phase 1 complete, paused at Gate 8 |
+| [v4](https://github.com/safiqsindha/Project-Ditto-V4) | Pokémon, as a methodology control | +0.131, strong-positive |
+| [v4.5](https://github.com/safiqsindha/Ditto-V4.5--DeepSeek-Flash-test) | DeepSeek V4 Flash cross-model probe | Scoping stub |
+| [v5](https://github.com/safiqsindha/Ditto-V5) | PUBG · NBA · CS:GO · Rocket League · poker | 4-tier hierarchy, closed |
+| **v5.1** ⟵ *you are here* | **22-model cross-provider panel** | **Near-chance across the panel** |
+| [v5.2](https://github.com/safiqsindha/Ditto-5.2-diagostic) | Diagnostic kit for the v5.1 null | Pre-registered, in progress |
+| [v5.4](https://github.com/safiqsindha/DITTO-V5.4-OLAT) | 24 inference levers, two DeepSeek models | 6 meaningful conditions |
 
-# Layer-2 CoT diagnostic on residual NBA + CSGO FPs:
-.venv/bin/python run_phase_d_cot.py --cells nba csgo
-```
+## Authors
 
-If 60-day Anthropic batch retention has expired, the raw responses are archived locally at `RESULTS/phase_d_raw_batches/*.jsonl` — modify `fetch_batch` in `retrieve_phase_d_partial.py` to read those files instead of hitting the API.
-
----
-
-## What's Deferred to v5.1+ / v6
-
-- **v5.1 cross-model replication via OpenRouter** — frozen Phase D prompts replayed across Anthropic / OpenAI / Google / open-weights models with a derived-state-marker ablation as a second axis. Pre-registered design in `MEMO.md` §6.
-- **v5.2 CSGO awpy fix** — adds bomb-site observability via parsed CS2 demos. Run *after* cross-model so capability vs. observability can be cleanly separated.
-- **v5.2 Rocket League per-event extraction** — carball / boxcars-py replay parsing. Same deferral logic as CSGO.
-- **v6 chain-length sweep, reasoning-mode toggles** — open candidates.
-
----
+**Safiq Sindha** · **Myriam Khalil** — full CRediT roles in [`OSF_PREREG.md`](OSF_PREREG.md) §12.
 
 ## License
 
-MIT.
+[MIT](LICENSE) — free to use, modify, and distribute.
